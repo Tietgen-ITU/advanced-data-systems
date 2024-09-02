@@ -16,7 +16,8 @@ inner join words as w on w.label = et.label or w.label != et.label
 GROUP BY et.label, w.value;
 
 -- Gets count of words for every category
-select wc.*, count(w.value)
+create or replace view category_word_count as
+select wc.label, wc.value, count(w.value) as count
 from (select et.label, w.value
       from (select distinct el.label from exercise_train as el) et
       inner join words as w on w.label = et.label or w.label != et.label

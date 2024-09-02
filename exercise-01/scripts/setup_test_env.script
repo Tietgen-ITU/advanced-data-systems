@@ -1,0 +1,18 @@
+create or replace table exercise_test (
+    label INT,
+    text VARCHAR
+);
+create or replace table exercise_train (
+    label INT,
+    text VARCHAR
+);
+
+insert into EXERCISE_TRAIN (label, text) VALUES
+    (0, 'just plain boring'),
+    (0, 'entirely predictable and lacks energy'),
+    (0, 'no surprises and very few laughs'),
+    (4, 'very powerful'),
+    (4, 'the most fun film of the summer');
+
+insert into EXERCISE_TEST (label, text) VALUES
+    (0, 'predictable with no fun');
