@@ -35,12 +35,12 @@ In order to upload the data I have followed the [guide from snowflake](https://d
 
 ```sql
 create or replace table yelp_train (
-    label VARCHAR,
+    label INT,
     text VARCHAR
 );
 
 create or replace table yelp_test (
-    label VARCHAR,
+    label INT,
     text VARCHAR
 );
 ```
@@ -57,20 +57,24 @@ FILE_FORMAT = anti_parquet;
 
 I add the files:
 ```
-PUT file:~/dev/msc/semester-3/ads/advanced-data-system/exercise-01/yelp_review_full/yelp_review_full/test-00000-of-00001.parquet
+PUT file:///Users/andreastietgen/dev/uni/msc/semester-3/ads/ad
+                                     vanced-data-systems/exercise-01/yelp_review_full/yelp_review_f
+                                     ull/train-00000-of-00001.parquet @stage_anti_ex1;
 
-PUT file:~/dev/msc/semester-3/ads/advanced-data-system/exercise-01/yelp_review_full/yelp_review_full/train-00000-of-00001.parquet
+PUT file:///Users/andreastietgen/dev/uni/msc/semester-3/ads/ad
+                                     vanced-data-systems/exercise-01/yelp_review_full/yelp_review_f
+                                     ull/test-00000-of-00001.parquet @stage_anti_ex1;
 ```
 
 And then I copy the data into the tables:
 ```sql
 copy into yelp_train
-    from (select $1:label::varchar,
+    from (select $1:label::int,
                 $1:text::varchar
          from @stage_anti_ex1/train-00000-of-00001.parquet);
 
 copy into yelp_test
-    from (select $1:label::varchar,
+    from (select $1:label::int,
                 $1:text::varchar
          from @stage_anti_ex1/test-00000-of-00001.parquet);
 ```
@@ -81,23 +85,23 @@ And now the data is inserted.
 Here is the script to create the small test setup defined in the slides about naive bayes sentiment analysis:
 ```sql
 create or replace table exercise_test (
-    label VARCHAR,
+    label INT,
     text VARCHAR
 );
 create or replace table exercise_train (
-    label VARCHAR,
+    label INT,
     text VARCHAR
 );
 
 insert into EXERCISE_TRAIN (label, text) VALUES
-    ('0', 'just plain boring'),
-    ('0', 'entirely predictable and lacks energy'),
-    ('0', 'no surprises and very few laughs'),
-    ('4', 'very powerful'),
-    ('4', 'the most fun film of the summer');
+    (0, 'just plain boring'),
+    (0, 'entirely predictable and lacks energy'),
+    (0, 'no surprises and very few laughs'),
+    (4, 'very powerful'),
+    (4, 'the most fun film of the summer');
 
 insert into EXERCISE_TEST (label, text) VALUES
-    ('0', 'predictable with no fun');
+    (0, 'predictable with no fun');
 ```
 
 ### Implementation of word counts in categories
