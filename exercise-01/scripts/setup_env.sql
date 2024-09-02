@@ -3,7 +3,8 @@ use DATABASE COBRA_DB;
 
 create or replace table yelp_train (
     label INT,
-    text VARCHAR
+    text VARCHAR,
+    doc_id INT
 );
 
 create or replace table yelp_test (
@@ -23,7 +24,8 @@ PUT file:///Users/andreastietgen/dev/uni/msc/semester-3/ads/advanced-data-system
 
 copy into yelp_train
     from (select $1:label::int,
-                $1:text::varchar
+                $1:text::varchar,
+                row_number() over (order by $1:text::varchar)
          from @stage_anti_ex1/train-00000-of-00001.parquet);
 
 copy into yelp_test
