@@ -36,7 +36,8 @@ In order to upload the data I have followed the [guide from snowflake](https://d
 ```sql
 create or replace table yelp_train (
     label INT,
-    text VARCHAR
+    text VARCHAR,
+    doc_id INT
 );
 
 create or replace table yelp_test (
@@ -70,7 +71,8 @@ And then I copy the data into the tables:
 ```sql
 copy into yelp_train
     from (select $1:label::int,
-                $1:text::varchar
+                $1:text::varchar,
+                row_number() over (order by $1:text::varchar)
          from @stage_anti_ex1/train-00000-of-00001.parquet);
 
 copy into yelp_test
@@ -84,21 +86,23 @@ And now the data is inserted.
 ### Create small test setup
 Here is the script to create the small test setup defined in the slides about naive bayes sentiment analysis:
 ```sql
+create or replace table exercise_train (
+    label INT,
+    text VARCHAR,
+    doc_id INT
+);
+
 create or replace table exercise_test (
     label INT,
     text VARCHAR
 );
-create or replace table exercise_train (
-    label INT,
-    text VARCHAR
-);
 
-insert into EXERCISE_TRAIN (label, text) VALUES
-    (0, 'just plain boring'),
-    (0, 'entirely predictable and lacks energy'),
-    (0, 'no surprises and very few laughs'),
-    (4, 'very powerful'),
-    (4, 'the most fun film of the summer');
+insert into EXERCISE_TRAIN (label, text, doc_id) VALUES
+    (0, 'just plain boring', 1),
+    (0, 'entirely predictable and lacks energy', 2),
+    (0, 'no surprises and very few laughs', 3),
+    (4, 'very powerful', 4),
+    (4, 'the most fun film of the summer', 5);
 
 insert into EXERCISE_TEST (label, text) VALUES
     (0, 'predictable with no fun');

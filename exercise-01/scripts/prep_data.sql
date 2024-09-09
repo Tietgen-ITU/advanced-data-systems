@@ -1,6 +1,6 @@
 -- Splits each word into its own entry with its corresponding label
 create or replace view words as
-select et.label, value
+select et.doc_id, et.label, value
 FROM EXERCISE_TRAIN as et, LATERAL split_to_table(et.text, ' ') as sp;
 
 select * from words;
