@@ -1,11 +1,29 @@
 import re
 import numpy as np
+import csv
 from collections import defaultdict
 
+file_path = '/tmp/model/bayes.csv'
+
+def write_data(label_probabilities, word_label_probabilities, distinct_words):
+    with open(file_path, "w") as file:
+        file.write(len(label_probabilities) + ";" + 2*len(distinct_words))
+
+        for label, probability in label_probabilities.items():
+            file.write(label + ";" + probability)
+
+        for label in label_probabilities:
+            for word in distinct_words:
+                file.write(label + ";" + word + ";" + word_label_probabilities[(label, word)])
+
+def read_data():
+    with open(file_path, "r") as file:
+        file.read()
+    return 
 
 # Cleans the text such that it only contains letters and returns it in lower_case
-def clean_text(self, text):
-    return re.sub(r'[^A-Za-z 0-9]', '', text).to_lower()
+def clean_text(text):
+    return re.sub(r'[^A-Za-z 0-9]', '', text).lower()
 
 # Handles calculations for Naive Bayes classifier for the sentiment analysis
 class BayesBuilder:
@@ -55,11 +73,9 @@ class BayesBuilder:
         return self.min_value if self.min_value > probability else probability
 
 
-        
-
     def build_classifier(self, training_data):
         labels_probability = self.__calculate_label_document_probabilities(training_data)
-        label_words = [(label, self.clean_text(text).split()) for label, text in training_data] 
+        label_words = [(label, clean_text(text).split()) for label, text in training_data] 
         words, label_distinct_word_count = self.__prepare_word_stats(training_data)
         V = len(words)
         label_word_count = self.__count_words_for_each_label(label_words)
@@ -81,7 +97,8 @@ class BayesBuilder:
             self.label_probabilities = label_probabilities
 
         def __calculate_ranking(self, label, label_probability, words):
-            word_probs = np.array([prob for word in words for prob in self.label_word_probabilities[(label, word)]])
+            probabilities = [self.label_word_probabilities[(label, word)] for word in words]
+            word_probs = np.array(probabilities)
 
             ranking = np.log(label_probability) + np.sum(np.log(word_probs))
             return ranking
@@ -92,7 +109,7 @@ class BayesBuilder:
             words = clean_text(text).split()
 
             rankings = []
-            for label, label_probability in self.label_probabilities:
+            for label, label_probability in self.label_probabilities.items():
                 ranking = self.__calculate_ranking(label, label_probability, words)
                 rankings.append((label, ranking))
 
@@ -121,4 +138,21 @@ class CobraSentimentHandler:
 
 
 if __name__ == '__main__':
-   print("hello world") 
+    test_data_path = "./test-data/data.csv"
+
+    data = []
+    with open(test_data_path, "r") as file:
+        csvreader = csv.reader(file, delimiter=';')
+
+        for (label, text, is_training_data) in csvreader:
+            data.append((int(label), text, is_training_data == "true"))
+    
+
+    udtf_handler = CobraSentimentHandler()
+    for label, text, is_training_data in data:
+        udtf_handler.process(label, text, is_training_data)
+
+    results = udtf_handler.end_partition()
+
+    for result in results:
+        print(result)
