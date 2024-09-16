@@ -181,3 +181,16 @@ if __name__ == '__main__':
         print(result)
 
 $$;
+
+CREATE OR REPLACE TABLE bayes_predictions AS
+SELECT results.*
+FROM udtf_data AS u,
+    TABLE(bayes_predict(u.label, u.text, u.is_training) over ()) AS results;
+
+SELECT * FROM udtf_predictions;
+
+WITH
+    num_correct   AS (SELECT COUNT(*) AS correct   FROM udtf_predictions WHERE expected_label = predicted_label),
+    num_incorrect AS (SELECT COUNT(*) AS incorrect FROM udtf_predictions WHERE expected_label <> predicted_label)
+SELECT correct / (correct + incorrect) AS success_rate, *
+FROM num_correct, num_incorrect;
