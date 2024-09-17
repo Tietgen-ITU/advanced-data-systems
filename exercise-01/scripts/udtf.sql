@@ -187,10 +187,8 @@ SELECT results.*
 FROM udtf_data AS u,
     TABLE(bayes_predict(u.label, u.text, u.is_training) over ()) AS results;
 
-SELECT * FROM udtf_predictions;
-
-WITH
-    num_correct   AS (SELECT COUNT(*) AS correct   FROM udtf_predictions WHERE expected_label = predicted_label),
-    num_incorrect AS (SELECT COUNT(*) AS incorrect FROM udtf_predictions WHERE expected_label <> predicted_label)
-SELECT correct / (correct + incorrect) AS success_rate, *
-FROM num_correct, num_incorrect;
+with 
+    negative_results    as (select count(*) as negatives from bayes_predictions where predicted <> target),
+    positive_results    as (select count(*) as positives from bayes_predictions where predicted = target)
+select positives / (positives + negatives) as success
+from positive_results, negative_results
