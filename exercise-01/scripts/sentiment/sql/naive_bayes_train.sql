@@ -45,9 +45,6 @@ select label, sum(word_count) as total_count_words_in_label
 from label_words
 group by label;
 
-select count(word_count), $V words from label_words;
-select * from label_total_word_count;
-
 create or replace table propabilities as
 select lw.*, lwc.total_count_words_in_label, calc_prop(lw.word_count, lwc.total_count_words_in_label, $V) word_prop, lp.label_prop as label_prop, $V total_words
 from label_words as lw
