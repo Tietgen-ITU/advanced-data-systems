@@ -3,14 +3,14 @@ set train_table = 'yelp_train';
 set test_table = 'yelp_test';
 
 create or replace table bayes_train as
-select label, text
-from table($train_table)
-where label = 0 or label = 4;
+    select label, text
+    from table($train_table)
+    where label = 0 or label = 4;
 
 create or replace table bayes_test as
     select label, text
     from table($test_table)
-    where label = 0 or label = 4
+    where label = 0 or label = 4;
 
 create or replace file FORMAT anti_csv
   TYPE = 'CSV'
@@ -217,9 +217,11 @@ $$;
 -- Uncomment below to be able to train, predict and see the success rate of the predictions
 -- -- Train the model
 -- COPY INTO @stage_anti_csv/model.csv
--- FROM bayes_train AS u,
---     TABLE(train_classifier(u.label, u.text) over ()) AS results)
+-- FROM(SELECT results.*
+--         FROM bayes_train as u,
+--             TABLE(train_classifier(u.label, u.text) over ()) AS results)
 -- single=true
+-- overwrite=true
 -- max_file_size=4900000000;
 
 -- -- Predict on test data
