@@ -1,6 +1,7 @@
 import snowflake.connector
 import os
 import queries.queries as tpc
+import csv
 
 def create_connection(database_name, schema_name):
     password = os.getenv('SNOWSQL_PWD')
@@ -39,10 +40,9 @@ def get_query_stats(cur, query_ids):
     return cur.fetchall()
 
 if __name__ == '__main__':
-    # warehouse_sizes = ['XSMALL', 'SMALL', 'MEDIUM', 'LARGE']
-    # schemas = ['TPCH_SF1', 'TPCH_SF10', 'TPCH_SF100', 'TPCH_SF1000']
-    warehouse_sizes = ['XSMALL', 'SMALL']
-    schemas = ['TPCH_SF1', 'TPCH_SF10']
+    warehouse_sizes = ['XSMALL', 'SMALL', 'MEDIUM', 'LARGE']
+    schemas = ['TPCH_SF1', 'TPCH_SF10', 'TPCH_SF100', 'TPCH_SF1000']
+    queryid_to_query = {}
     query_ids = []
     repetitions = 3
 
@@ -71,13 +71,21 @@ if __name__ == '__main__':
                             print(status_print, end='\r')
 
                         cur.execute(tpc.query1)
-                        query_ids.append(cur.sfqid) # Adds the query id to the list
+                        qid = cur.sfqid
+                        query_ids.append(qid) # Adds the query id to the list
+                        queryid_to_query[qid] = idx
+
 
                     print()
         
         stats = get_query_stats(cur, query_ids)
-        for qid, schema, warehouse_size, elapsed_seconds, elapsed_milli in stats:
-            print((qid, schema, warehouse_size, elapsed_seconds, elapsed_milli))
+        with open('./benchmark_stats.csv', 'w') as file:
+            writer = csv.writer(file, delimiter=';')
+
+            for qid, schema, warehouse_size, elapsed_seconds, elapsed_milli in stats:
+                writer.writerow((qid, queryid_to_query[qid], schema, warehouse_size, float(elapsed_seconds), elapsed_milli))
         
     finally:
         conn.close()
+
+    print("Benchmark results is written to 'benchmark_stats.csv'")
