@@ -1,4 +1,7 @@
 ALTER SESSION SET USE_CACHED_RESULT = FALSE;
+
+set quantity = 314; -- Must be a value in the range of 312 and 315 (inclusive)
+
 select
     c_name,
     c_custkey,
@@ -13,7 +16,7 @@ select
 where o_orderkey in (select l_orderkey 
                         from lineitem
                         group by l_orderkey 
-                        having sum(l_quantity) > [QUANTITY])
+                        having sum(l_quantity) > $quantity)
     and c_custkey = o_custkey
     and o_orderkey = l_orderkey
 group by
