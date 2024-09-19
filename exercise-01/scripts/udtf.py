@@ -17,7 +17,7 @@ class BayesBuilder:
             csvreader = csv.reader(f, delimiter=';')
 
             for (label, word, label_probability, word_probability) in csvreader:
-                yield label, word, label_probability, word_probability
+                yield int(label), word, float(label_probability), float(word_probability)
 
     def build_classifier_from_model(self, model_file_path):
 
@@ -73,6 +73,6 @@ class CobraSentimentHandler:
         builder = BayesBuilder()
         classifier = builder.build_classifier_from_model(model_file_path)
         
-        for target, text in self.test_data:
+        for target, text in self.data:
             predicted, rank = classifier.predict(text)
             yield (target, predicted, rank, text)
