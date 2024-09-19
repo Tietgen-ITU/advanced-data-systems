@@ -1,3 +1,4 @@
+ALTER SESSION SET USE_CACHED_RESULT = FALSE;
 set days_to_subtract = 60; -- Can range between 60 to 120 (inclusive)
 
 select
