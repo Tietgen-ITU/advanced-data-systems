@@ -1,11 +1,13 @@
 # This is basically what you can find the in file ../sql/naive_bayes_train.sql
-sql_train = """
-set train_table = 'yelp_train';
+__train_table = 'yelp_train'
+
+sql_train = f"""
+BEGIN
 
 -- Create a reduced set of documents based on the labels we want to see
 create or replace temporary view reduced_documents as
 select t.*
-from table($train_table) as t
+from table({__train_table}) as t
 inner join labels as l on t.label = l.label;
 
 create or replace table words as
@@ -52,16 +54,19 @@ select lw.*, lwc.total_count_words_in_label, calc_prop(lw.word_count, lwc.total_
 from label_words as lw
 inner join label_total_word_count as lwc on lwc.label = lw.label
 inner join label_propabilities as lp on lp.label = lwc.label;
+
+END;
 """
 
 # This is basically what you can find the in file ../sql/naive_bayes_test.sql
-sql_query = """
-set test_table = 'yelp_test';
+__test_table = 'yelp_test'
+sql_query = f"""
+BEGIN
 
 -- Create a query to find best probability
 create or replace temporary table reduced_test_documents as
 select row_number() over (order by t.text) id, t.*
-from table($test_table) as t
+from table({__test_table}) as t
 inner join labels as l on t.label = l.label;
 
 create or replace temporary table test_words as
@@ -77,9 +82,10 @@ inner join propabilities as pw ON pw.value = t.value
 GROUP BY t.doc_id, pw.label, pw.label_prop;
 
 -- Get prediction results
-create or replace temporary view prediction_results as
 select r.doc_id, IFF(r.label = rtd.label, 'Correct', 'Not Correct') as status, r.label predicted, rtd.label target, rtd.text 
 from ranking r
 inner join reduced_test_documents as rtd on rtd.id = r.doc_id
 where r.id = 1;
+
+END;
 """
