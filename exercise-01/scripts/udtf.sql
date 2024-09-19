@@ -2,17 +2,6 @@
 set train_table = 'yelp_train';
 set test_table = 'yelp_test';
 
-create or replace table udtf_data as
-select * from (
-    (select label, text, true as is_training_data 
-    from table($train_table)
-    where label = 0 or label = 4)
-    union
-    (select label, text, false as is_training_data 
-    from table($test_table)
-    where label = 0 or label = 4)
-);
-
 create or replace file FORMAT anti_csv
   TYPE = 'CSV'
   FIELD_DELIMITER = ';';
