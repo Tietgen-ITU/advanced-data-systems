@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
         
         stats = get_query_stats(cur, query_ids)
-        with open('./benchmark_stats.csv', 'w') as file:
+        with open('./benchmark_sentiment_stats.csv', 'w') as file:
             writer = csv.writer(file, delimiter=';')
 
             for qid, schema, warehouse_size, elapsed_seconds, elapsed_milli in stats:
@@ -99,3 +99,5 @@ if __name__ == '__main__':
 
     finally:
         conn.close()
+
+    print("Benchmark results is written to 'benchmark_sentiment_stats.csv'")
