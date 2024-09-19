@@ -58,6 +58,15 @@ copy into yelp_test
     from (select $1:label::int,
                 $1:text::varchar
          from @stage_anti_ex1/test-00000-of-00001.parquet);
+
+-- Create a labels tabel defining the labels we want to look at
+create or replace table labels (
+        label INT
+);
+
+insert into labels (label) VALUES
+        (0),
+        (4);
 ```
 
 ### Create small test setup

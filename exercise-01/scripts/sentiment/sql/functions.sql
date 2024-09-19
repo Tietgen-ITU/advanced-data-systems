@@ -12,7 +12,7 @@ $$;
 -- A view of the propability that a particular word appears in a document of a specific category
 set min_number = 1e-322;
 
-CREATE OR REPLACE FUNCTION calc_prop(word_count INTEGER, total_words_with_label INTEGER) RETURNS FLOAT AS $$
+CREATE OR REPLACE FUNCTION calc_prop(word_count INTEGER, total_words_with_label INTEGER, total_words INTEGER) RETURNS FLOAT AS $$
     
-    IFF($min_number > (word_count + 1) / (total_words_with_label + $V), $min_number, (word_count + 1) / (total_words_with_label + $V))
+    IFF($min_number > (word_count + 1) / (total_words_with_label + $total_words), $min_number, (word_count + 1) / (total_words_with_label + $total_words))
 $$;

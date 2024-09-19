@@ -2,6 +2,16 @@
 set train_table = 'yelp_train';
 set test_table = 'yelp_test';
 
+create or replace table bayes_train as
+select label, text
+from table($train_table)
+where label = 0 or label = 4;
+
+create or replace table bayes_test as
+    select label, text
+    from table($test_table)
+    where label = 0 or label = 4
+
 create or replace file FORMAT anti_csv
   TYPE = 'CSV'
   FIELD_DELIMITER = ';';
@@ -115,14 +125,6 @@ class CobraSentimentHandler:
             yield (label, word, label_probability, word_probability)
 $$;
 
-COPY INTO @stage_anti_csv/model.csv
-FROM ( SELECT results.*
-        FROM (select label, text 
-            from table($train_table)
-            where label = 0 or label = 4) AS u,
-        TABLE(train_classifier(u.label, u.text) over ()) AS results)
-single=true
-max_file_size=4900000000;
 
 create or replace function bayes_classify(label INTEGER, text TEXT)
 returns table (expected_label INTEGER, predicted_label INTEGER, ranking NUMBER, text TEXT)
@@ -212,13 +214,20 @@ class CobraSentimentHandler:
             yield (target, predicted, rank, text)
 $$;
 
+-- Train the model
+COPY INTO @stage_anti_csv/model.csv
+FROM bayes_train AS u,
+    TABLE(train_classifier(u.label, u.text) over ()) AS results)
+single=true
+max_file_size=4900000000;
+
+-- Predict on test data
 CREATE OR REPLACE TABLE bayes_predictions AS
 SELECT results.*
-FROM (select label, text
-        from table($test_table)
-        where label = 0 or label = 4) AS u,
+FROM (bayes_test) AS u,
     TABLE(bayes_predict(u.label, u.text, u.is_training) over ()) AS results;
 
+-- Show the success rate
 with 
     negative_results    as (select count(*) as negatives from bayes_predictions where predicted <> target),
     positive_results    as (select count(*) as positives from bayes_predictions where predicted = target)
