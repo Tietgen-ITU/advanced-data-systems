@@ -128,8 +128,10 @@ $$;
 
 COPY INTO @stage_anti_csv/model.csv
 FROM ( SELECT results.*
-        FROM udtf_data AS u,
-            TABLE(train_classifier(u.label, u.text, u.is_training_data) over ()) AS results)
+        FROM (select label, text 
+            from table($train_table)
+            where label = 0 or label = 4) AS u,
+        TABLE(train_classifier(u.label, u.text) over ()) AS results)
 single=true
 max_file_size=4900000000;
 
