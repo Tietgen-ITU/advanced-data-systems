@@ -1,6 +1,4 @@
 import re
-import numpy as np
-import csv
 from collections import defaultdict
 
 # Cleans the text such that it only contains letters and returns it in lower_case

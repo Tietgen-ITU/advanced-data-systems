@@ -13,36 +13,22 @@ select * from (
     where label = 0 or label = 4)
 );
 
-create or replace function train_and_classify(is_training BOOLEAN, label INTEGER, text TEXT)
-returns table (text TEXT, expected_label INTEGER, predicted_label INTEGER, ranking NUMBER)
+create or replace file FORMAT anti_csv
+  TYPE = 'CSV'
+  FIELD_DELIMITER = ';';
+
+create or replace stage stage_anti_csv
+    FILE_FORMAT = anti_csv;
+    
+create or replace function train_classifier(label INTEGER, text TEXT)
+returns table (label INTEGER, word TEXT, label_probability float, word_probability float)
 language python
 runtime_version=3.11
 packages = ('numpy')
 handler='CobraSentimentHandler'
 as $$
-# Python code goes into here
 import re
-import numpy as np
-import csv
 from collections import defaultdict
-
-file_path = '/tmp/model/bayes.csv'
-
-def write_data(label_probabilities, word_label_probabilities, distinct_words):
-    with open(file_path, "w") as file:
-        file.write(len(label_probabilities) + ";" + 2*len(distinct_words))
-
-        for label, probability in label_probabilities.items():
-            file.write(label + ";" + probability)
-
-        for label in label_probabilities:
-            for word in distinct_words:
-                file.write(label + ";" + word + ";" + word_label_probabilities[(label, word)])
-
-def read_data():
-    with open(file_path, "r") as file:
-        file.read()
-    return 
 
 # Cleans the text such that it only contains letters and returns it in lower_case
 def clean_text(text):
@@ -118,6 +104,84 @@ class BayesBuilder:
         def __init__(self, label_word_probabilities, label_probabilities):
             self.label_word_probabilities = label_word_probabilities
             self.label_probabilities = label_probabilities
+        
+        def output_metadata(self):
+            for (label, word), word_probability in self.label_word_probabilities.items():
+                label_probability = self.label_probabilities[label]
+                yield (label, word, label_probability, word_probability)
+
+class CobraSentimentHandler:
+    def __init__(self):
+        self.training_data = []
+
+    def process(self, label, text):
+        # Get training data and test data seperated
+        self.training_data.append((label, text))
+
+    def end_partition(self):
+        builder = BayesBuilder()
+        classifier = builder.build_classifier(self.training_data)
+        
+        for label, word, label_probability, word_probability in classifier.output_metadata():
+            yield (label, word, label_probability, word_probability)
+$$;
+
+COPY INTO @stage_anti_csv/model.csv
+FROM ( SELECT results.*
+        FROM udtf_data AS u,
+            TABLE(train_classifier(u.label, u.text, u.is_training_data) over ()) AS results)
+single=true
+max_file_size=4900000000;
+
+create or replace function bayes_classify(label INTEGER, text TEXT)
+returns table (text TEXT, expected_label INTEGER, predicted_label INTEGER, ranking NUMBER)
+language python
+runtime_version=3.11
+packages = ('numpy')
+imports="('@stage_anti_csv/model.csv')"
+handler='CobraSentimentHandler'
+as $$
+import re
+import numpy as np
+import csv
+import os
+import sys
+
+# Cleans the text such that it only contains letters and returns it in lower_case
+def clean_text(text):
+    return re.sub(r'[^A-Za-z 0-9]', '', text).lower()
+
+# Handles the reading and pre-processing of the model metadata
+class BayesBuilder:
+
+    # Reads the model data at the specified path
+    def read_model_data(self, path):
+        with open(path, "r") as f:
+            csvreader = csv.reader(f, delimiter=';')
+
+            for (label, word, label_probability, word_probability) in csvreader:
+                yield label, word, label_probability, word_probability
+
+    def build_classifier_from_model(self, model_file_path):
+
+        label_probabilities = {}
+        words_in_label_probabilities = {}
+        words = set()
+
+        for label, word, label_probability, word_probability in self.read_model_data(model_file_path):
+            words.add(word)
+            label_probabilities[label] = label_probability
+            words_in_label_probabilities[(label, word)] = word_probability
+
+        return self.BayesClassifier(words_in_label_probabilities, label_probabilities, words)
+
+    # The classifier that calculates the rankings of the text belonging to a specific label
+    class BayesClassifier:
+
+        def __init__(self, label_word_probabilities, label_probabilities, words):
+            self.label_word_probabilities = label_word_probabilities
+            self.label_probabilities = label_probabilities
+            self.words = words
 
         def __calculate_ranking(self, label, label_probability, words):
             probabilities = [self.label_word_probabilities[(label, word)] for word in words]
@@ -126,65 +190,43 @@ class BayesBuilder:
             ranking = np.log(label_probability) + np.sum(np.log(word_probs))
             return ranking
 
+        # Predicts the label that the text belongs to 
+        def predict(self, text):
 
-        def calculate(self, text):
-
-            words = clean_text(text).split()
+            text_words = clean_text(text).split()
+            known_words = [word for word in text_words if word in self.words]
 
             rankings = []
             for label, label_probability in self.label_probabilities.items():
-                ranking = self.__calculate_ranking(label, label_probability, words)
+                ranking = self.__calculate_ranking(label, label_probability, known_words)
                 rankings.append((label, ranking))
 
             return max(rankings, key=lambda x: x[1])
 
 class CobraSentimentHandler:
     def __init__(self):
-        self.training_data = []
-        self.test_data = []
+        self.data = []
 
-    def process(self, label, text, is_training_data):
-        # Get training data and test data seperated
-        if is_training_data:
-            self.training_data.append((label, text))
-        else:
-            self.test_data.append((label, text))
+    def process(self, label, text):
+        self.data.append((label, text))
 
     def end_partition(self):
+        model_file_path = os.path.join(sys._xoptions["snowflake_import_directory"], 'model.csv')
+
         builder = BayesBuilder()
-        classifier = builder.build_classifier(self.training_data)
+        classifier = builder.build_classifier_from_model(model_file_path)
         
         for target, text in self.test_data:
-            predicted, rank = classifier.calculate(text)
+            predicted, rank = classifier.predict(text)
             yield (target, predicted, rank, text)
-        
-
-
-if __name__ == '__main__':
-    test_data_path = "./test-data/data.csv"
-
-    data = []
-    with open(test_data_path, "r") as file:
-        csvreader = csv.reader(file, delimiter=';')
-
-        for (label, text, is_training_data) in csvreader:
-            data.append((int(label), text, is_training_data == "true"))
-    
-
-    udtf_handler = CobraSentimentHandler()
-    for label, text, is_training_data in data:
-        udtf_handler.process(label, text, is_training_data)
-
-    results = udtf_handler.end_partition()
-
-    for result in results:
-        print(result)
 
 $$;
 
 CREATE OR REPLACE TABLE bayes_predictions AS
 SELECT results.*
-FROM udtf_data AS u,
+FROM (select label, text
+        from table($test_table)
+        where label = 0 or label = 4) AS u,
     TABLE(bayes_predict(u.label, u.text, u.is_training) over ()) AS results;
 
 with 
