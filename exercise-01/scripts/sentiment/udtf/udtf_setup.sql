@@ -214,22 +214,23 @@ class CobraSentimentHandler:
             yield (target, predicted, rank, text)
 $$;
 
--- Train the model
-COPY INTO @stage_anti_csv/model.csv
-FROM bayes_train AS u,
-    TABLE(train_classifier(u.label, u.text) over ()) AS results)
-single=true
-max_file_size=4900000000;
+-- Uncomment below to be able to train, predict and see the success rate of the predictions
+-- -- Train the model
+-- COPY INTO @stage_anti_csv/model.csv
+-- FROM bayes_train AS u,
+--     TABLE(train_classifier(u.label, u.text) over ()) AS results)
+-- single=true
+-- max_file_size=4900000000;
 
--- Predict on test data
-CREATE OR REPLACE TABLE bayes_predictions AS
-SELECT results.*
-FROM (bayes_test) AS u,
-    TABLE(bayes_predict(u.label, u.text, u.is_training) over ()) AS results;
+-- -- Predict on test data
+-- CREATE OR REPLACE TABLE bayes_predictions AS
+-- SELECT results.*
+-- FROM (bayes_test) AS u,
+--     TABLE(bayes_predict(u.label, u.text, u.is_training) over ()) AS results;
 
--- Show the success rate
-with 
-    negative_results    as (select count(*) as negatives from bayes_predictions where predicted <> target),
-    positive_results    as (select count(*) as positives from bayes_predictions where predicted = target)
-select positives / (positives + negatives) as success
-from positive_results, negative_results
+-- -- Show the success rate
+-- with 
+--     negative_results    as (select count(*) as negatives from bayes_predictions where predicted <> target),
+--     positive_results    as (select count(*) as positives from bayes_predictions where predicted = target)
+-- select positives / (positives + negatives) as success
+-- from positive_results, negative_results
