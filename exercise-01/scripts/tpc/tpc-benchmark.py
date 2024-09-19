@@ -21,6 +21,7 @@ def create_connection(database_name, schema_name):
 
 def setup_warehouse(cur, wh_size):
     cur.execute("create or replace warehouse COBRA_WH with WAREHOUSE_SIZE = " + wh_size + ";")
+    cur.execute("use warehouse COBRA_WH;")
 
 def change_schema(cur, schema):
     cur.execute("use schema " + schema + ";")
@@ -50,7 +51,6 @@ if __name__ == '__main__':
     conn = snowflake.connector.connect(**connection_config)
     cur = conn.cursor()
     try:
-        # Run queries in here
         for wh_size in warehouse_sizes:
             print("WAREHOUSE_SIZE: ", wh_size)
             setup_warehouse(cur, wh_size)
@@ -75,9 +75,9 @@ if __name__ == '__main__':
                         query_ids.append(qid) # Adds the query id to the list
                         queryid_to_query[qid] = idx
 
-
                     print()
         
+        # Ouput the query stats in a CSV file
         stats = get_query_stats(cur, query_ids)
         with open('./benchmark_stats.csv', 'w') as file:
             writer = csv.writer(file, delimiter=';')
