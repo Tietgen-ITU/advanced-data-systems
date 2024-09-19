@@ -125,7 +125,7 @@ single=true
 max_file_size=4900000000;
 
 create or replace function bayes_classify(label INTEGER, text TEXT)
-returns table (text TEXT, expected_label INTEGER, predicted_label INTEGER, ranking NUMBER)
+returns table (expected_label INTEGER, predicted_label INTEGER, ranking NUMBER, text TEXT)
 language python
 runtime_version=3.11
 packages = ('numpy')
