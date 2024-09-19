@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 import csv
 import snowflake.connector
 import queries.udtf as udtf
@@ -34,13 +35,6 @@ def get_query_stats(cur, query_ids):
     cur.execute(stats_query)
     return cur.fetchall()
 
-def run_udtf_query(cur):
-    cur.execute(udtf.udtf_train)
-    cur.execute(udtf.udtf_query)
-
-def run_sql_query(cur):
-    cur.execute(sql.sql_query)
-
 def use_warehouse(cur, warehouse):
     cur.execute(f"use warehouse {warehouse}")
 
@@ -48,6 +42,7 @@ if __name__ == '__main__':
     repetitions = 3
     query_ids = []
     queryids_to_querytype = {}
+    repetition_to_queryid = {}
 
     connection_config = create_connection("COBRA_DB", "PUBLIC")
     conn = snowflake.connector.connect(**connection_config)
@@ -60,42 +55,81 @@ if __name__ == '__main__':
         # Run SQL train queries
         print("Running SQL train queries")
         for i in range(repetitions):
-            cur.execute(sql.sql_train)
-            qid = cur.sfqid
-            query_ids.append(qid)
-            queryids_to_querytype[qid] = "SQL_TRAIN"
+            queries = []
+            if i < (repetitions - 1):
+                print(f"Running repetition {1+i} out of {repetitions}", end="\r")
+            else:
+                print(f"Running repetition {1+i} out of {repetitions}")
+
+            for idx, query in enumerate(sql.sql_train_queries):
+                cur.execute(query)
+                qid = cur.sfqid
+                query_ids.append(qid)
+                queries.append(qid)
+                queryids_to_querytype[qid] = "SQL_TRAIN"
+            
+            repetition_to_queryid[(i, "SQL_TRAIN")] = queries
+
 
         # Run SQL predict queries        
         print("Running SQL predict queries")
         for i in range(repetitions):
-            cur.execute(sql.sql_query)
-            qid = cur.sfqid
-            query_ids.append(qid)
-            queryids_to_querytype[qid] = "SQL_PREDICT"
+            queries = []
+            if i < (repetitions - 1):
+                print(f"Running repetition {1+i} out of {repetitions}", end="\r")
+            else:
+                print(f"Running repetition {1+i} out of {repetitions}")
+
+            for query in sql.sql_test_queries:
+                cur.execute(query)
+                qid = cur.sfqid
+                query_ids.append(qid)
+                queryids_to_querytype[qid] = "SQL_PREDICT"
+
+            repetition_to_queryid[(i, "SQL_PREDICT")] = queries
         
         # Run UDTF train queries
         print("Running UDTF train queries")
         for i in range(repetitions):
+            if i < (repetitions - 1):
+                print(f"Running repetition {1+i} out of {repetitions}", end="\r")
+            else:
+                print(f"Running repetition {1+i} out of {repetitions}")
+
             cur.execute(udtf.udtf_train)
             qid = cur.sfqid
             query_ids.append(qid)
             queryids_to_querytype[qid] = "UDTF_TRAIN"
+            repetition_to_queryid[(i, "UDTF_TRAIN")] = [qid]
         
         # Run UDTF predict queries
         print("Running UDTF predict queries")
         for i in range(repetitions):
+            if i < (repetitions - 1):
+                print(f"Running repetition {1+i} out of {repetitions}", end="\r")
+            else:
+                print(f"Running repetition {1+i} out of {repetitions}")
+
             cur.execute(udtf.udtf_query)
             qid = cur.sfqid
             query_ids.append(qid)
             queryids_to_querytype[qid] = "UDTF_PREDICT"
+            repetition_to_queryid[(i, "UDTF_PREDICT")] = [qid]
 
         
         stats = get_query_stats(cur, query_ids)
+        stats_mapping = {}
+        for qid, schema, warehouse_size, elapsed_seconds, elapsed_milli in stats:
+            stats_mapping[qid] = (schema, warehouse_size, elapsed_seconds, elapsed_milli)
+
         with open('./benchmark_sentiment_stats.csv', 'w') as file:
             writer = csv.writer(file, delimiter=';')
 
-            for qid, schema, warehouse_size, elapsed_seconds, elapsed_milli in stats:
-                writer.writerow((qid, queryids_to_querytype[qid], schema, warehouse_size, float(elapsed_seconds), elapsed_milli))
+
+            for (i, query_type), qids in repetition_to_queryid.items():
+                aggregated_elapsed_milli = sum([stats_mapping[qid][3] for qid in qids])
+                aggregated_elapsed_seconds = aggregated_elapsed_milli / 1000
+                writer.writerow((i, query_type, aggregated_elapsed_seconds, aggregated_elapsed_milli))
 
     finally:
         conn.close()
