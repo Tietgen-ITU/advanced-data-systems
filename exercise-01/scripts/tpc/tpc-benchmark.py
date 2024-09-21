@@ -44,7 +44,7 @@ if __name__ == '__main__':
     warehouse_sizes = ['XSMALL', 'SMALL', 'MEDIUM', 'LARGE']
     schemas = ['TPCH_SF1', 'TPCH_SF10', 'TPCH_SF100', 'TPCH_SF1000']
     queryid_to_query = {}
-    query_ids = []
+    stats = []
     repetitions = 3
 
     connection_config = create_connection("SNOWFLAKE_SAMPLE_DATA", "")
@@ -54,6 +54,7 @@ if __name__ == '__main__':
         for wh_size in warehouse_sizes:
             print("WAREHOUSE_SIZE: ", wh_size)
             setup_warehouse(cur, wh_size)
+            query_ids = []
 
             for schema in schemas:
                 print("SCHEMA: ", schema)
@@ -76,14 +77,17 @@ if __name__ == '__main__':
                         queryid_to_query[qid] = idx
 
                     print()
+            
+            wh_query_stats = get_query_stats(cur, query_ids)
+            for qid, schema, warehouse_size, elapsed_seconds, elapsed_milli in wh_query_stats:
+                stats.append((qid, queryid_to_query[qid], schema, warehouse_size, float(elapsed_seconds), elapsed_milli))
         
         # Ouput the query stats in a CSV file
-        stats = get_query_stats(cur, query_ids)
         with open('./benchmark_stats.csv', 'w') as file:
             writer = csv.writer(file, delimiter=';')
 
-            for qid, schema, warehouse_size, elapsed_seconds, elapsed_milli in stats:
-                writer.writerow((qid, queryid_to_query[qid], schema, warehouse_size, float(elapsed_seconds), elapsed_milli))
+            for qid, queryid_type, schema, warehouse_size, elapsed_seconds, elapsed_milli in stats:
+                writer.writerow((qid, queryid_type, schema, warehouse_size, elapsed_seconds, elapsed_milli))
         
     finally:
         conn.close()
