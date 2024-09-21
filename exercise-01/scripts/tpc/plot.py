@@ -60,8 +60,7 @@ def plot_histogram(data, bins=10, title="Histogram", xlabel="Values", ylabel="Fr
 
 if __name__ == "__main__":
     id_to_query = {0: 1, 1: 5, 2: 18}
-    warehouse_sizes = ['Medium', 'Large']
-    # warehouse_sizes = ['XSMALL', 'SMALL', 'MEDIUM', 'LARGE']
+    warehouse_sizes = ['X-Small', 'Small', 'Medium', 'Large']
     schemas = ['TPCH_SF1', 'TPCH_SF10', 'TPCH_SF100', 'TPCH_SF1000']
 
     data = []
