@@ -21,9 +21,9 @@ def plot_bar(categories, values, title="Bar Chart", xlabel="Categories", ylabel=
 
     plt.figure(figsize=(8, 6))
     plt.bar(categories, values, color=plot_colors)
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.title(title, fontsize=18)
+    plt.xlabel(xlabel, fontsize=14)
+    plt.ylabel(ylabel, fontsize=14)
     plt.grid(True)
     plt.savefig(f"plots/{filename}", format='png')
     plt.close()  # Close the figure after saving
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     elapsed_train = [sum(train_udtf)/3, sum(train_sql)/3]
 
     # Plot a bar chart
-    plot_bar(["UDTF", "SQL"], elapsed_train, title="UDTF vs. SQL Elapsed training time", xlabel="Query Type", ylabel="Elapsed Time (seconds)", filename="train_elapsed_seconds.png")
+    plot_bar(["UDTF", "SQL"], elapsed_train, title="UDTF vs. SQL Elapsed training time", xlabel="Solution Type", ylabel="Elapsed Time (seconds)", filename="train_elapsed_seconds.png")
 
     elapsed_predict = [sum(predict_udtf)/3, sum(predict_sql)/3]
-    plot_bar(["UDTF", "SQL"], elapsed_predict, title="UDTF vs. SQL Elapsed prediction time", xlabel="Query Type", ylabel="Elapsed Time (seconds)", filename="predict_elapsed_seconds.png")
+    plot_bar(["UDTF", "SQL"], elapsed_predict, title="UDTF vs. SQL Elapsed prediction time", xlabel="Solution Type", ylabel="Elapsed Time (seconds)", filename="predict_elapsed_seconds.png")
