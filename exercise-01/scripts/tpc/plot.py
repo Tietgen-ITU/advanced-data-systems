@@ -120,7 +120,7 @@ if __name__ == "__main__":
         plot_lines(schemas, 
                 dwh, 
                 title=f"Query {qid} Elapsed Time", 
-                xlabel="Schema-Warehouse Size", 
-                ylabel="Logarithmically Normalized Elapsed Time (ms)", 
+                xlabel="Schema (Scaling Factor)", 
+                ylabel="Log Normalized Elapsed Time (ms)", 
                 max_y_value=max_y_value,
                 filename=f"query_{qid}_elapsed_time.png")
