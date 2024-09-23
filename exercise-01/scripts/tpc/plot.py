@@ -26,14 +26,13 @@ def plot_lines(x, ys, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", max_y
         line_style = line_styles[index]
         plt.plot(x, data, marker=marker, linestyle=line_style, label=key)
 
-    plt.title(title)
-
     if max_y_value > 0:
         plt.ylim(0, max_y_value*1.1)
 
     plt.legend()
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.title(title, fontsize=20)
+    plt.xlabel(xlabel, fontsize=16)
+    plt.ylabel(ylabel, fontsize=16)
     plt.grid(True)
     plt.savefig(f"plots/{filename}", format='png')
     plt.close()  # Close the figure after saving
