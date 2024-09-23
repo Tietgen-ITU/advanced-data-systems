@@ -71,7 +71,7 @@ if __name__ == '__main__':
                         else:
                             print(status_print, end='\r')
 
-                        cur.execute(tpc.query1)
+                        cur.execute(query)
                         qid = cur.sfqid
                         query_ids.append(qid) # Adds the query id to the list
                         queryid_to_query[qid] = idx
