@@ -16,7 +16,7 @@ def plot_line(x, y, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", filenam
     plt.savefig(f"plots/{filename}", format='png')
     plt.close()  # Close the figure after saving
 
-def plot_lines(x, ys, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", filename="line_plot.png"):
+def plot_lines(x, ys, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", max_y_value=0, filename="line_plot.png"):
     plt.figure(figsize=(8, 6))
     for index, key in enumerate(ys):
         data = ys[key]
@@ -25,6 +25,10 @@ def plot_lines(x, ys, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", filen
         plt.plot(x, data, marker=marker, linestyle=line_style, label=key)
 
     plt.title(title)
+
+    if max_y_value > 0:
+        plt.ylim(0, max_y_value)
+
     plt.legend()
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -94,6 +98,7 @@ if __name__ == "__main__":
     
 
     # Plot the average elapsed time for each query in each schema and warehouse size
+    query_benchmarks = {}
     for _,qid in id_to_query.items():
         dwh = defaultdict(lambda: list())
         for schema in schemas:
@@ -101,4 +106,16 @@ if __name__ == "__main__":
                 if (qid, schema, wh) not in queries_aggregated_elapsed:
                     continue
                 dwh[wh].append(queries_aggregated_elapsed[(qid, schema, wh)])
-        plot_lines(schemas, dwh, title=f"Query {qid} Elapsed Time", xlabel="Schema-Warehouse Size", ylabel="Elapsed Time (milliseconds)", filename=f"query_{qid}_elapsed_time.png")
+        
+        query_benchmarks[qid] = dwh
+
+    # Get the maximum elapsed time to set the y-axis limit
+    max_y_value = max([max([max(v) for v in query_benchmarks[qid].values()]) for qid in query_benchmarks])
+
+    plot_lines(schemas, 
+            dwh, 
+            title=f"Query {qid} Elapsed Time", 
+            xlabel="Schema-Warehouse Size", 
+            ylabel="Elapsed Time (milliseconds)", 
+            max_y_value=max_y_value,
+            filename=f"query_{qid}_elapsed_time.png")
