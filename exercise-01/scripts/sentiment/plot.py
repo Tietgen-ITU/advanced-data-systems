@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import csv
 
+colors = ['blue', 'green', 'red', 'orange', 'purple', '#FF5733', '#33FF57', '#3357FF', 'cyan', 'magenta']
+
 # Function to create and save a line plot
 def plot_line(x, y, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", filename="line_plot.png"):
     plt.figure(figsize=(8, 6))
@@ -14,8 +16,11 @@ def plot_line(x, y, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", filenam
 
 # Function to create and save a bar chart
 def plot_bar(categories, values, title="Bar Chart", xlabel="Categories", ylabel="Values", filename="bar_chart.png"):
+
+    plot_colors = colors[:len(categories)]
+
     plt.figure(figsize=(8, 6))
-    plt.bar(categories, values, color='g')
+    plt.bar(categories, values, color=plot_colors)
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
