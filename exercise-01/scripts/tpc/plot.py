@@ -1,4 +1,6 @@
+import math
 import matplotlib.pyplot as plt
+import numpy as np
 from collections import defaultdict
 import csv
 
@@ -27,7 +29,7 @@ def plot_lines(x, ys, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", max_y
     plt.title(title)
 
     if max_y_value > 0:
-        plt.ylim(0, max_y_value)
+        plt.ylim(0, max_y_value*1.1)
 
     plt.legend()
     plt.xlabel(xlabel)
@@ -69,6 +71,9 @@ def plot_histogram(data, bins=10, title="Histogram", xlabel="Values", ylabel="Fr
     plt.savefig(f"plots/{filename}", format='png')
     plt.close()  # Close the figure after saving
 
+def logarithmic_normalization(data):
+    return np.log(data+1e-10)
+
 if __name__ == "__main__":
     id_to_query = {0: 1, 1: 5, 2: 18}
     warehouse_sizes = ['X-Small', 'Small', 'Medium', 'Large']
@@ -105,17 +110,18 @@ if __name__ == "__main__":
             for wh in warehouse_sizes:
                 if (qid, schema, wh) not in queries_aggregated_elapsed:
                     continue
-                dwh[wh].append(queries_aggregated_elapsed[(qid, schema, wh)])
+                value = queries_aggregated_elapsed[(qid, schema, wh)]
+                dwh[wh].append(math.log(value))
         
         query_benchmarks[qid] = dwh
 
     # Get the maximum elapsed time to set the y-axis limit
     max_y_value = max([max([max(v) for v in query_benchmarks[qid].values()]) for qid in query_benchmarks])
-
-    plot_lines(schemas, 
-            dwh, 
-            title=f"Query {qid} Elapsed Time", 
-            xlabel="Schema-Warehouse Size", 
-            ylabel="Elapsed Time (milliseconds)", 
-            max_y_value=max_y_value,
-            filename=f"query_{qid}_elapsed_time.png")
+    for qid, dwh in query_benchmarks.items():
+        plot_lines(schemas, 
+                dwh, 
+                title=f"Query {qid} Elapsed Time", 
+                xlabel="Schema-Warehouse Size", 
+                ylabel="Logarithmically Normalized Elapsed Time (ms)", 
+                max_y_value=max_y_value,
+                filename=f"query_{qid}_elapsed_time.png")

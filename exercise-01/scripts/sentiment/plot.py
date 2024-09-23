@@ -21,9 +21,9 @@ def plot_bar(categories, values, title="Bar Chart", xlabel="Categories", ylabel=
 
     plt.figure(figsize=(8, 6))
     plt.bar(categories, values, color=plot_colors)
-    plt.title(title, fontsize=18)
-    plt.xlabel(xlabel, fontsize=14)
-    plt.ylabel(ylabel, fontsize=14)
+    plt.title(title, fontsize=20)
+    plt.xlabel(xlabel, fontsize=16)
+    plt.ylabel(ylabel, fontsize=16)
     plt.grid(True)
     plt.savefig(f"plots/{filename}", format='png')
     plt.close()  # Close the figure after saving
