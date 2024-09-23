@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 import csv
 
+markers = ['o', 's', '^', 'D', 'v']
+line_styles = ['-', '--', '-.', ':', '-']
+
 # Function to create and save a line plot
 def plot_line(x, y, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", filename="line_plot.png"):
     plt.figure(figsize=(8, 6))
@@ -15,10 +18,14 @@ def plot_line(x, y, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", filenam
 
 def plot_lines(x, ys, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", filename="line_plot.png"):
     plt.figure(figsize=(8, 6))
-    for label, data in ys.items():
-        plt.plot(x, data, marker='o', linestyle='-', label=label)
+    for index, key in enumerate(ys):
+        data = ys[key]
+        marker = markers[index]
+        line_style = line_styles[index]
+        plt.plot(x, data, marker=marker, linestyle=line_style, label=key)
 
     plt.title(title)
+    plt.legend()
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid(True)
@@ -28,7 +35,7 @@ def plot_lines(x, ys, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", filen
 # Function to create and save a bar chart
 def plot_bar(categories, values, title="Bar Chart", xlabel="Categories", ylabel="Values", filename="bar_chart.png"):
     plt.figure(figsize=(8, 6))
-    plt.bar(categories, values, color='g')
+    plt.bar(categories, values)
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -83,7 +90,7 @@ if __name__ == "__main__":
                 if len(benchmarks) > 0:
                     elapsed_seconds = sum([b[0] for b in benchmarks]) / len(benchmarks)
                     elapsed_milli = sum([b[1] for b in benchmarks]) / len(benchmarks)
-                    queries_aggregated_elapsed[(qid, schema, wh)] = elapsed_seconds
+                    queries_aggregated_elapsed[(qid, schema, wh)] = elapsed_milli
     
 
     # Plot the average elapsed time for each query in each schema and warehouse size
@@ -94,6 +101,4 @@ if __name__ == "__main__":
                 if (qid, schema, wh) not in queries_aggregated_elapsed:
                     continue
                 dwh[wh].append(queries_aggregated_elapsed[(qid, schema, wh)])
-        print(schemas) 
-        print(dwh)
-        plot_lines(schemas, dwh, title=f"Query {qid} Elapsed Time", xlabel="Schema-Warehouse Size", ylabel="Elapsed Time (s)", filename=f"query_{qid}_elapsed_time.png")
+        plot_lines(schemas, dwh, title=f"Query {qid} Elapsed Time", xlabel="Schema-Warehouse Size", ylabel="Elapsed Time (milliseconds)", filename=f"query_{qid}_elapsed_time.png")
