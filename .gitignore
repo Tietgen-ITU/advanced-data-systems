@@ -2,3 +2,4 @@
 plots/
 
 *.pyc
+.DS_Store

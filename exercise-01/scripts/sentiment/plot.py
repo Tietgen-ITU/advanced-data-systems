@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import csv
 
+colors = ['blue', 'green', 'red', 'orange', 'purple', '#FF5733', '#33FF57', '#3357FF', 'cyan', 'magenta']
+
 # Function to create and save a line plot
 def plot_line(x, y, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", filename="line_plot.png"):
     plt.figure(figsize=(8, 6))
@@ -14,11 +16,14 @@ def plot_line(x, y, title="Line Plot", xlabel="X-axis", ylabel="Y-axis", filenam
 
 # Function to create and save a bar chart
 def plot_bar(categories, values, title="Bar Chart", xlabel="Categories", ylabel="Values", filename="bar_chart.png"):
+
+    plot_colors = colors[:len(categories)]
+
     plt.figure(figsize=(8, 6))
-    plt.bar(categories, values, color='g')
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.bar(categories, values, color=plot_colors)
+    plt.title(title, fontsize=20)
+    plt.xlabel(xlabel, fontsize=16)
+    plt.ylabel(ylabel, fontsize=16)
     plt.grid(True)
     plt.savefig(f"plots/{filename}", format='png')
     plt.close()  # Close the figure after saving
@@ -62,7 +67,7 @@ if __name__ == "__main__":
     elapsed_train = [sum(train_udtf)/3, sum(train_sql)/3]
 
     # Plot a bar chart
-    plot_bar(["UDTF", "SQL"], elapsed_train, title="UDTF vs. SQL Elapsed training time", xlabel="Query Type", ylabel="Elapsed Time (seconds)", filename="train_elapsed_seconds.png")
+    plot_bar(["UDTF", "SQL"], elapsed_train, title="UDTF vs. SQL Elapsed training time", xlabel="Solution Type", ylabel="Elapsed Time (seconds)", filename="train_elapsed_seconds.png")
 
     elapsed_predict = [sum(predict_udtf)/3, sum(predict_sql)/3]
-    plot_bar(["UDTF", "SQL"], elapsed_predict, title="UDTF vs. SQL Elapsed prediction time", xlabel="Query Type", ylabel="Elapsed Time (seconds)", filename="predict_elapsed_seconds.png")
+    plot_bar(["UDTF", "SQL"], elapsed_predict, title="UDTF vs. SQL Elapsed prediction time", xlabel="Solution Type", ylabel="Elapsed Time (seconds)", filename="predict_elapsed_seconds.png")
