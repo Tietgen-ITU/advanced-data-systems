@@ -21,7 +21,7 @@ GROUP BY l.label, w.value;
 
 -- Gets count of words for every category
 create or replace table label_words as
-select wc.label, wc.value, count(wc.value) as word_count
+select wc.label, wc.value, count(w.value) as word_count
 from cross_label_words as wc
 left outer join words as w on wc.label = w.label and wc.value = w.value
 GROUP BY wc.label, wc.value;
