@@ -127,6 +127,15 @@ class CobraSentimentHandler:
 $$;
 
 
+-- Train the model
+COPY INTO @stage_anti_csv/model.csv
+FROM(SELECT results.*
+        FROM bayes_train as u,
+            TABLE(train_classifier(u.label, u.text) over ()) AS results)
+single=true
+overwrite=true
+max_file_size=4900000000;
+
 create or replace function bayes_classify(label INTEGER, text TEXT)
 returns table (expected_label INTEGER, predicted_label INTEGER, ranking NUMBER, text TEXT)
 language python
@@ -215,25 +224,16 @@ class CobraSentimentHandler:
             yield (target, predicted, rank, text)
 $$;
 
--- Uncomment below to be able to train, predict and see the success rate of the predictions
--- -- Train the model
--- COPY INTO @stage_anti_csv/model.csv
--- FROM(SELECT results.*
---         FROM bayes_train as u,
---             TABLE(train_classifier(u.label, u.text) over ()) AS results)
--- single=true
--- overwrite=true
--- max_file_size=4900000000;
-
+-- Uncomment the following code to run the model
 -- -- Predict on test data
--- CREATE OR REPLACE TABLE bayes_predictions AS
+-- CREATE OR REPLACE TABLE bayes_udtf_predictions AS
 -- SELECT results.*
 -- FROM (bayes_test) AS u,
---     TABLE(bayes_predict(u.label, u.text, u.is_training) over ()) AS results;
+--     TABLE(bayes_classify(u.label, u.text) over ()) AS results;
 
 -- -- Show the success rate
 -- with 
---     negative_results    as (select count(*) as negatives from bayes_predictions where predicted_label <> expected_label),
---     positive_results    as (select count(*) as positives from bayes_predictions where predicted_label = expected_label)
+--     negative_results    as (select count(*) as negatives from bayes_udtf_predictions where predicted_label <> expected_label),
+--     positive_results    as (select count(*) as positives from bayes_udtf_predictions where predicted_label = expected_label)
 -- select positives / (positives + negatives) as success
 -- from positive_results, negative_results;
