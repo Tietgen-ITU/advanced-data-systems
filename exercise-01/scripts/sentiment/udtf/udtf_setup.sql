@@ -14,7 +14,8 @@ create or replace table bayes_test as
 
 create or replace file FORMAT anti_csv
   TYPE = 'CSV'
-  FIELD_DELIMITER = ';';
+  FIELD_DELIMITER = ';'
+  COMPRESSION = NONE;
 
 create or replace stage stage_anti_csv
     FILE_FORMAT = anti_csv;
@@ -66,32 +67,32 @@ class BayesBuilder:
 
     def __prepare_word_stats(self, training_data):
         distinct_words = set()
-        distinct_label_words = defaultdict(lambda: set())
+        total_label_words = defaultdict(lambda: 0)
 
         for label, text in training_data:
             for word in clean_text(text).split():
                 distinct_words.add(word)
-                distinct_label_words[label].add(word)
+                total_label_words[label] += 1
         
-        return (distinct_words, {label:len(words) for label, words in distinct_label_words.items()})
+        return (distinct_words, total_label_words)
 
 
-    def __calc_word_probability(self, word_count, total_words_in_label, total_words):
-        probability = (word_count+1)/(total_words_in_label+total_words)
+    def __calc_word_probability(self, word_count, total_word_in_label, total_words):
+        probability = (word_count+1)/(total_word_in_label+total_words)
         return self.min_value if self.min_value > probability else probability
 
 
     def build_classifier(self, training_data):
         labels_probability = self.__calculate_label_document_probabilities(training_data)
         label_words = [(label, clean_text(text).split()) for label, text in training_data] 
-        words, label_distinct_word_count = self.__prepare_word_stats(training_data)
+        words, total_label_word_count = self.__prepare_word_stats(training_data)
         V = len(words)
         label_word_count = self.__count_words_for_each_label(label_words)
 
         # For each word calculate the probability for all labels
         words_in_label_probabilities = defaultdict(lambda: self.min_value)
         for label in labels_probability:
-            total_distinct_word_count_label = label_distinct_word_count[label]
+            total_distinct_word_count_label = total_label_word_count[label]
             for word in words:
                 words_in_label_probabilities[(label, word)] = self.__calc_word_probability(label_word_count[(label, word)], total_distinct_word_count_label, V)
         
@@ -125,6 +126,15 @@ class CobraSentimentHandler:
             yield (label, word, label_probability, word_probability)
 $$;
 
+
+-- Train the model
+COPY INTO @stage_anti_csv/model.csv
+FROM(SELECT results.*
+        FROM bayes_train as u,
+            TABLE(train_classifier(u.label, u.text) over ()) AS results)
+single=true
+overwrite=true
+max_file_size=4900000000;
 
 create or replace function bayes_classify(label INTEGER, text TEXT)
 returns table (expected_label INTEGER, predicted_label INTEGER, ranking NUMBER, text TEXT)
@@ -214,25 +224,16 @@ class CobraSentimentHandler:
             yield (target, predicted, rank, text)
 $$;
 
--- Uncomment below to be able to train, predict and see the success rate of the predictions
--- -- Train the model
--- COPY INTO @stage_anti_csv/model.csv
--- FROM(SELECT results.*
---         FROM bayes_train as u,
---             TABLE(train_classifier(u.label, u.text) over ()) AS results)
--- single=true
--- overwrite=true
--- max_file_size=4900000000;
-
+-- Uncomment the following code to run the model
 -- -- Predict on test data
--- CREATE OR REPLACE TABLE bayes_predictions AS
+-- CREATE OR REPLACE TABLE bayes_udtf_predictions AS
 -- SELECT results.*
 -- FROM (bayes_test) AS u,
---     TABLE(bayes_predict(u.label, u.text, u.is_training) over ()) AS results;
+--     TABLE(bayes_classify(u.label, u.text) over ()) AS results;
 
 -- -- Show the success rate
 -- with 
---     negative_results    as (select count(*) as negatives from bayes_predictions where predicted <> target),
---     positive_results    as (select count(*) as positives from bayes_predictions where predicted = target)
+--     negative_results    as (select count(*) as negatives from bayes_udtf_predictions where predicted_label <> expected_label),
+--     positive_results    as (select count(*) as positives from bayes_udtf_predictions where predicted_label = expected_label)
 -- select positives / (positives + negatives) as success
--- from positive_results, negative_results
+-- from positive_results, negative_results;
