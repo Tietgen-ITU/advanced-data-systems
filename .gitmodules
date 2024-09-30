@@ -1,3 +1,6 @@
 [submodule "exercise-01/yelp_review_full"]
 	path = exercise-01/yelp_review_full
 	url = https://huggingface.co/datasets/Yelp/yelp_review_full
+[submodule "exercise-02/duckdb"]
+	path = exercise-02/duckdb
+	url = https://github.com/Tietgen-ITU/duckdb.git
