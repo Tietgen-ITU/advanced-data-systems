@@ -5,7 +5,7 @@
 #define NO_FUNC (int (*)()) NULL   /* to clean up tdefs */
 #define NO_LFUNC (long (*)()) NULL /* to clean up tdefs */
 
-#include "include/config.h"
+#include "config.h"
 #include <stdlib.h>
 #if (defined(_POSIX_) || !defined(WIN32)) /* Change for Windows NT */
 #ifndef DOS
@@ -56,8 +56,9 @@
 #pragma warning(default : 4214)
 #endif
 
-#include "include/dss.h"
-#include "include/dsstypes.h"
+#include "dss.h"
+#include "dsstypes.h"
+#include "bcd2.h"
 
 /*
  * Function prototypes
@@ -106,14 +107,28 @@ char *spawn_args[25];
 /*
  * flat file print functions; used with -F(lat) option
  */
+#ifdef SSBM
 int pr_cust(customer_t *c, int mode);
 int pr_part(part_t *p, int mode);
 int pr_supp(supplier_t *s, int mode);
 int pr_line(order_t *o, int mode);
+#else
+int pr_cust(customer_t *c, int mode);
+int pr_line(order_t *o, int mode);
+int pr_order(order_t *o, int mode);
+int pr_part(part_t *p, int mode);
+int pr_psupp(part_t *p, int mode);
+int pr_supp(supplier_t *s, int mode);
+int pr_order_line(order_t *o, int mode);
+int pr_part_psupp(part_t *p, int mode);
+int pr_nation(code_t *c, int mode);
+int pr_region(code_t *c, int mode);
+#endif
 
 /*
  * inline load functions; used with -D(irect) option
  */
+#ifdef SSBM
 int ld_cust(customer_t *c, int mode);
 int ld_part(part_t *p, int mode);
 int ld_supp(supplier_t *s, int mode);
@@ -122,9 +137,23 @@ int ld_supp(supplier_t *s, int mode);
 int ld_line(order_t *o, int mode);
 int ld_order(order_t *o, int mode);
 
+#else
+int ld_cust(customer_t *c, int mode);
+int ld_line(order_t *o, int mode);
+int ld_order(order_t *o, int mode);
+int ld_part(part_t *p, int mode);
+int ld_psupp(part_t *p, int mode);
+int ld_supp(supplier_t *s, int mode);
+int ld_order_line(order_t *o, int mode);
+int ld_part_psupp(part_t *p, int mode);
+int ld_nation(code_t *c, int mode);
+int ld_region(code_t *c, int mode);
+#endif
+
 /*
  * seed generation functions; used with '-O s' option
  */
+#ifdef SSBM
 long sd_cust(int child, long skip_count);
 long sd_part(int child, long skip_count);
 long sd_supp(int child, long skip_count);
@@ -132,24 +161,63 @@ long sd_supp(int child, long skip_count);
 long sd_line(int child, long skip_count);
 long sd_order(int child, long skip_count);
 
+#else
+long sd_cust(int child, long skip_count);
+long sd_line(int child, long skip_count);
+long sd_order(int child, long skip_count);
+long sd_part(int child, long skip_count);
+long sd_psupp(int child, long skip_count);
+long sd_supp(int child, long skip_count);
+long sd_order_line(int child, long skip_count);
+long sd_part_psupp(int child, long skip_count);
+#endif
+
 /*
  * header output functions); used with -h(eader) option
  */
+#ifdef SSBM
 int hd_cust(FILE *f);
 int hd_part(FILE *f);
 int hd_supp(FILE *f);
 int hd_line(FILE *f);
 
+#else
+int hd_cust(FILE *f);
+int hd_line(FILE *f);
+int hd_order(FILE *f);
+int hd_part(FILE *f);
+int hd_psupp(FILE *f);
+int hd_supp(FILE *f);
+int hd_order_line(FILE *f);
+int hd_part_psupp(FILE *f);
+int hd_nation(FILE *f);
+int hd_region(FILE *f);
+#endif
+
 /*
  * data verfication functions; used with -O v option
  */
+#ifdef SSBM
 int vrf_cust(customer_t *c, int mode);
 int vrf_part(part_t *p, int mode);
 int vrf_supp(supplier_t *s, int mode);
 int vrf_line(order_t *o, int mode);
 int vrf_order(order_t *o, int mode);
 int vrf_date(date_t, int mode);
+#else
+int vrf_cust(customer_t *c, int mode);
+int vrf_line(order_t *o, int mode);
+int vrf_order(order_t *o, int mode);
+int vrf_part(part_t *p, int mode);
+int vrf_psupp(part_t *p, int mode);
+int vrf_supp(supplier_t *s, int mode);
+int vrf_order_line(order_t *o, int mode);
+int vrf_part_psupp(part_t *p, int mode);
+int vrf_nation(code_t *c, int mode);
+int vrf_region(code_t *c, int mode);
+#endif
 
+#ifdef SSBM
 tdef tdefs[] =
 	{
 
@@ -168,6 +236,22 @@ tdef tdefs[] =
 		{0, 0, 0, 0, {0, 0}, 0, 0, 0, 0},
 };
 
+#else
+
+tdef tdefs[] =
+	{
+		{"part.tbl", "part table", 200000, hd_part, {pr_part, ld_part}, sd_part, vrf_part, PSUPP, 0},
+		{"partsupp.tbl", "partsupplier table", 200000, hd_psupp, {pr_psupp, ld_psupp}, sd_psupp, vrf_psupp, NONE, 0},
+		{"supplier.tbl", "suppliers table", 10000, hd_supp, {pr_supp, ld_supp}, sd_supp, vrf_supp, NONE, 0},
+		{"customer.tbl", "customers table", 150000, hd_cust, {pr_cust, ld_cust}, sd_cust, vrf_cust, NONE, 0},
+		{"orders.tbl", "order table", 150000, hd_order, {pr_order, ld_order}, sd_order, vrf_order, LINE, 0},
+		{"lineitem.tbl", "lineitem table", 150000, hd_line, {pr_line, ld_line}, sd_line, vrf_line, NONE, 0},
+		{"orders.tbl", "orders/lineitem tables", 150000, hd_order_line, {pr_order_line, ld_order_line}, sd_order, vrf_order_line, LINE, 0},
+		{"part.tbl", "part/partsupplier tables", 200000, hd_part_psupp, {pr_part_psupp, ld_part_psupp}, sd_part, vrf_part_psupp, PSUPP, 0},
+		{"nation.tbl", "nation table", NATIONS_MAX, hd_nation, {pr_nation, ld_nation}, NO_LFUNC, vrf_nation, NONE, 0},
+		{"region.tbl", "region table", NATIONS_MAX, hd_region, {pr_region, ld_region}, NO_LFUNC, vrf_region, NONE, 0},
+};
+#endif
 int *pids;
 
 /*
@@ -231,6 +315,40 @@ int set_files(int i, int pload)
 }
 
 /*
+ * read the distributions needed in the benchamrk
+ */
+void load_dists(void)
+{
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "p_cntr", &p_cntr_set);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "colors", &colors);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "p_types", &p_types_set);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "nations", &nations);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "regions", &regions);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "o_oprio",
+			  &o_priority_set);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "instruct",
+			  &l_instruct_set);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "smode", &l_smode_set);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "category",
+			  &l_category_set);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "rflag", &l_rflag_set);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "msegmnt", &c_mseg_set);
+
+	/* load the distributions that contain text generation */
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "nouns", &nouns);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "verbs", &verbs);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "adjectives", &adjectives);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "adverbs", &adverbs);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "auxillaries", &auxillaries);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "terminators", &terminators);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "articles", &articles);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "prepositions", &prepositions);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "grammar", &grammar);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "np", &np);
+	read_dist(env_config(DIST_TAG, DIST_DFLT), "vp", &vp);
+}
+
+/*
  * generate a particular table
  */
 void gen_tbl(int tnum, long start, long count, long upd_num)
@@ -239,7 +357,11 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 	supplier_t supp;
 	customer_t cust;
 	part_t part;
+#ifdef SSBM
 	date_t dt;
+#else
+	code_t code;
+#endif
 	static int completed = 0;
 	static int init = 0;
 	long i;
@@ -258,7 +380,11 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 	{
 		INIT_HUGE(o.okey);
 		for (i = 0; i < O_LCNT_MAX; i++)
+#ifdef SSBM
 			INIT_HUGE(o.lineorders[i].okey);
+#else
+			INIT_HUGE(o.l[i].okey);
+#endif
 		init = 1;
 	}
 
@@ -270,6 +396,11 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 		switch (tnum)
 		{
 		case LINE:
+#ifdef SSBM
+#else
+		case ORDER:
+		case ORDER_LINE:
+#endif
 			mk_order(i, &o, upd_num % 10000);
 
 			if (insert_segments && (upd_num > 0))
@@ -312,7 +443,13 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 				else
 					tdefs[tnum].loader[direct](&cust, upd_num);
 			break;
+#ifdef SSBM
 		case PART:
+#else
+		case PSUPP:
+		case PART:
+		case PART_PSUPP:
+#endif
 			mk_part(i, &part);
 			if (set_seeds == 0)
 				if (validate)
@@ -320,6 +457,7 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 				else
 					tdefs[tnum].loader[direct](&part, upd_num);
 			break;
+#ifdef SSBM
 		case DATE:
 			mk_date(i, &dt);
 			if (set_seeds == 0)
@@ -328,6 +466,24 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 				else
 					tdefs[tnum].loader[direct](&dt, 0);
 			break;
+#else
+		case NATION:
+			mk_nation(i, &code);
+			if (set_seeds == 0)
+				if (validate)
+					tdefs[tnum].verify(&code, 0);
+				else
+					tdefs[tnum].loader[direct](&code, 0);
+			break;
+		case REGION:
+			mk_region(i, &code);
+			if (set_seeds == 0)
+				if (validate)
+					tdefs[tnum].verify(&code, 0);
+				else
+					tdefs[tnum].loader[direct](&code, 0);
+			break;
+#endif
 		}
 		row_stop(tnum);
 		if (set_seeds && (i % tdefs[tnum].base) < 2)
@@ -341,6 +497,7 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 
 void usage(void)
 {
+#ifdef SSBM
 	fprintf(stderr, "%s\n%s\n\t%s\n%s %s\n\n",
 			"USAGE:",
 			"dbgen [-{vfFD}] [-O {fhmsv}][-T {pcsdla}]",
@@ -348,6 +505,14 @@ void usage(void)
 			"dbgen [-v] [-O {dfhmr}] [-s <scale>]",
 			"[-U <updates>] [-r <percent>]");
 
+#else
+	fprintf(stderr, "%s\n%s\n\t%s\n%s %s\n\n",
+			"USAGE:",
+			"dbgen [-{vfFD}] [-O {fhmsv}][-T {pcsoPSOL}]",
+			"[-s <scale>][-C <procs>][-S <step>]",
+			"dbgen [-v] [-O {dfhmr}] [-s <scale>]",
+			"[-U <updates>] [-r <percent>]");
+#endif
 	fprintf(stderr, "-b <s> -- load distributions for <s>\n");
 	fprintf(stderr, "-C <n> -- use <n> processes to generate data\n");
 	fprintf(stderr, "          [Under DOS, must be used with -S]\n");
@@ -370,11 +535,25 @@ void usage(void)
 	fprintf(stderr, "-s <n> -- set Scale Factor (SF) to  <n> \n");
 	fprintf(stderr, "-S <n> -- build the <n>th step of the data/update set\n");
 
+#ifdef SSBM
 	fprintf(stderr, "-T c   -- generate cutomers dimension table ONLY\n");
 	fprintf(stderr, "-T p   -- generate parts dimension table ONLY\n");
 	fprintf(stderr, "-T s   -- generate suppliers dimension table ONLY\n");
 	fprintf(stderr, "-T d   -- generate date dimension table ONLY\n");
 	fprintf(stderr, "-T l   -- generate lineorder fact table ONLY\n");
+#else
+	fprintf(stderr, "-T c   -- generate cutomers ONLY\n");
+	fprintf(stderr, "-T l   -- generate nation/region ONLY\n");
+	fprintf(stderr, "-T L   -- generate lineitem ONLY\n");
+	fprintf(stderr, "-T n   -- generate nation ONLY\n");
+	fprintf(stderr, "-T o   -- generate orders/lineitem ONLY\n");
+	fprintf(stderr, "-T O   -- generate orders ONLY\n");
+	fprintf(stderr, "-T p   -- generate parts/partsupp ONLY\n");
+	fprintf(stderr, "-T P   -- generate parts ONLY\n");
+	fprintf(stderr, "-T r   -- generate region ONLY\n");
+	fprintf(stderr, "-T s   -- generate suppliers ONLY\n");
+	fprintf(stderr, "-T S   -- generate partsupp ONLY\n");
+#endif
 
 	fprintf(stderr, "-U <s> -- generate <s> update sets\n");
 	fprintf(stderr, "-v     -- enable VERBOSE mode\n");
@@ -522,6 +701,7 @@ void process_options(int count, char **vector)
 		case 'T': /* generate a specifc table */
 			switch (*optarg)
 			{
+#ifdef SSBM
 			case 'c': /* generate customer ONLY */
 				table = 1 << CUST;
 				break;
@@ -544,6 +724,42 @@ void process_options(int count, char **vector)
 				table |= 1 << DATE;
 				table |= 1 << LINE;
 				break;
+#else
+			case 'c': /* generate customer ONLY */
+				table = 1 << CUST;
+				break;
+			case 'L': /* generate lineitems ONLY */
+				table = 1 << LINE;
+				break;
+			case 'l': /* generate code table ONLY */
+				table = 1 << NATION;
+				table |= 1 << REGION;
+				break;
+			case 'n': /* generate nation table ONLY */
+				table = 1 << NATION;
+				break;
+			case 'O': /* generate orders ONLY */
+				table = 1 << ORDER;
+				break;
+			case 'o': /* generate orders/lineitems ONLY */
+				table = 1 << ORDER_LINE;
+				break;
+			case 'P': /* generate part ONLY */
+				table = 1 << PART;
+				break;
+			case 'p': /* generate part/partsupp ONLY */
+				table = 1 << PART_PSUPP;
+				break;
+			case 'r': /* generate region table ONLY */
+				table = 1 << REGION;
+				break;
+			case 'S': /* generate partsupp ONLY */
+				table = 1 << PSUPP;
+				break;
+			case 's': /* generate suppliers ONLY */
+				table = 1 << SUPP;
+				break;
+#endif
 			default:
 				fprintf(stderr, "Unknown table name %s\n",
 						optarg);
@@ -694,8 +910,17 @@ int main(int ac, char **av)
 	updates = 0;
 	refresh = UPD_PCT;
 	step = -1;
+#ifdef SSBM
 	tdefs[LINE].base *=
 		ORDERS_PER_CUST; /* have to do this after init */
+#else
+	tdefs[ORDER].base *=
+		ORDERS_PER_CUST; /* have to do this after init */
+	tdefs[LINE].base *=
+		ORDERS_PER_CUST; /* have to do this after init */
+	tdefs[ORDER_LINE].base *=
+		ORDERS_PER_CUST; /* have to do this after init */
+#endif
 	fnames = 0;
 	db_name = NULL;
 	gen_sql = 0;
@@ -725,7 +950,7 @@ int main(int ac, char **av)
 		fprintf(stderr, "Copyright %s %s\n", TPC, C_DATES);
 	}
 
-	load_distributions();
+	load_dists();
 	/* have to do this after init */
 	tdefs[NATION].base = nations.count;
 	tdefs[REGION].base = regions.count;
@@ -740,8 +965,13 @@ int main(int ac, char **av)
 		 */
 		double fix1;
 
+#ifdef SSBM
 		set_state(LINE, scale, 1, 2, (long *)&i);
 		fix1 = (double)tdefs[LINE].base / (double)10000; /*represent the %% percentage (n/100)%*/
+#else
+		set_state(ORDER, scale, 1, 2, (long *)&i);
+		fix1 = (double)tdefs[ORDER_LINE].base / (double)10000;
+#endif
 		rowcnt = (int)(fix1 * scale * refresh);
 		if (step > 0)
 		{
@@ -758,17 +988,32 @@ int main(int ac, char **av)
 		while (upd_num < updates)
 		{
 			if (verbose > 0)
+#ifdef SSBM
 				fprintf(stderr,
 						"Generating update pair #%d for %s [pid: %d]",
 						upd_num + 1, tdefs[LINE].comment, DSS_PROC);
+#else
+				fprintf(stderr,
+						"Generating update pair #%d for %s [pid: %d]",
+						upd_num + 1, tdefs[ORDER_LINE].comment, DSS_PROC);
+
+#endif
 			insert_orders_segment = 0;
 			insert_lineitem_segment = 0;
 			delete_segment = 0;
 			minrow = upd_num * rowcnt + 1;
+#ifdef SSBM
 			gen_tbl(LINE, minrow, rowcnt, upd_num + 1);
+#else
+			gen_tbl(ORDER_LINE, minrow, rowcnt, upd_num + 1);
+#endif
 			if (verbose > 0)
 				fprintf(stderr, "done.\n");
+#ifdef SSBM
 			pr_drange(LINE, minrow, rowcnt, upd_num + 1);
+#else
+			pr_drange(ORDER_LINE, minrow, rowcnt, upd_num + 1);
+#endif
 			upd_num++;
 		}
 
@@ -835,6 +1080,7 @@ int main(int ac, char **av)
 					rowcnt = tdefs[i].base * scale;
 				else
 					rowcnt = tdefs[i].base;
+#ifdef SSBM
 				if (i == PART)
 				{
 					rowcnt = tdefs[i].base * (floor(1 + log((double)(scale)) / (log(2))));
@@ -843,6 +1089,7 @@ int main(int ac, char **av)
 				{
 					rowcnt = tdefs[i].base;
 				}
+#endif
 				if (verbose > 0)
 					fprintf(stderr, "%s data for %s [pid: %ld]",
 							(validate) ? "Validating" : "Generating", tdefs[i].comment, DSS_PROC);
