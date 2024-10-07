@@ -6,16 +6,14 @@
  *		dbg_text() -- select and translate a sentance form
  */
 
-#ifdef TEST
-#define DECLARER
-#endif /* TEST */
-
-#include "config.h"
+#include "include/config.h"
 #include <stdlib.h>
-#if (defined(_POSIX_) || !defined(WIN32)) /* Change for Windows NT */
-/*#include <unistd.h>
-#include <sys/wait.h>*/
-#endif			   /* WIN32 */
+#if (defined(_POSIX_) || !defined(WIN32))
+/* Change for Windows NT */
+#include <unistd.h>
+#include <sys/wait.h>
+#endif
+/* WIN32 */
 #include <stdio.h> /* */
 #include <limits.h>
 #include <math.h>
@@ -52,8 +50,8 @@
 #pragma warning(default : 4214)
 #endif
 
-#include "dss.h"
-#include "dsstypes.h"
+#include "include/dss.h"
+#include "include/dsstypes.h"
 
 /*
  * txt_vp() --
@@ -67,16 +65,13 @@
  *	Called By: txt_sentence()
  *	Calls: pick_str()
  */
-static int txt_vp(char *dest, int sd)
+static int txt_vp(char *dest, int seed)
 {
-	char syntax[MAX_GRAMMAR_LEN + 1],
-		*cptr,
-		*parse_target;
+	char syntax[MAX_GRAMMAR_LEN + 1], *cptr, *parse_target;
 	distribution *src;
-	int i,
-		res = 0;
+	int i, res = 0;
 
-	pick_str(&vp, sd, &syntax[0]);
+	pick_str(&vp, seed, &syntax[0]);
 	parse_target = syntax;
 	while ((cptr = strtok(parse_target, " ")) != NULL)
 	{
@@ -93,7 +88,7 @@ static int txt_vp(char *dest, int sd)
 			src = &auxillaries;
 			break;
 		} /* end of POS switch statement */
-		i = pick_str(src, sd, dest);
+		i = pick_str(src, seed, dest);
 		i = strlen(DIST_MEMBER(src, i));
 		dest += i;
 		res += i;
@@ -124,17 +119,13 @@ static int txt_vp(char *dest, int sd)
  *	Called By: txt_sentence()
  *	Calls: pick_str(),
  */
-static int
-txt_np(char *dest, int sd)
+static int txt_np(char *dest, int seed)
 {
-	char syntax[MAX_GRAMMAR_LEN + 1],
-		*cptr,
-		*parse_target;
+	char syntax[MAX_GRAMMAR_LEN + 1], *cptr, *parse_target;
 	distribution *src;
-	int i,
-		res = 0;
+	int i, res = 0;
 
-	pick_str(&np, sd, &syntax[0]);
+	pick_str(&np, seed, &syntax[0]);
 	parse_target = syntax;
 	while ((cptr = strtok(parse_target, " ")) != NULL)
 	{
@@ -154,8 +145,8 @@ txt_np(char *dest, int sd)
 			src = &nouns;
 			break;
 		} /* end of POS switch statement */
-		i = pick_str(src, sd, dest);
-		i = strlen(DIST_MEMBER(src, i));
+		i = pick_str(src, seed, dest);
+		i = (int)strlen(DIST_MEMBER(src, i));
 		dest += i;
 		res += i;
 		if (*(++cptr)) /* miscelaneous fillagree, like punctuation */
@@ -185,16 +176,12 @@ txt_np(char *dest, int sd)
  *	Called By: dbg_text()
  *	Calls: pick_str(), txt_np(), txt_vp()
  */
-static int
-txt_sentence(char *dest, int sd)
+static int txt_sentence(char *dest, int seed)
 {
-	char syntax[MAX_GRAMMAR_LEN + 1],
-		*cptr;
-	int i,
-		res = 0,
-		len = 0;
+	char syntax[MAX_GRAMMAR_LEN + 1], *cptr;
+	int i, res = 0, len = 0;
 
-	pick_str(&grammar, sd, syntax);
+	pick_str(&grammar, seed, syntax);
 	cptr = syntax;
 
 next_token: /* I hate goto's, but can't seem to have parent and child use strtok() */
@@ -205,20 +192,20 @@ next_token: /* I hate goto's, but can't seem to have parent and child use strtok
 	switch (*cptr)
 	{
 	case 'V':
-		len = txt_vp(dest, sd);
+		len = txt_vp(dest, seed);
 		break;
 	case 'N':
-		len = txt_np(dest, sd);
+		len = txt_np(dest, seed);
 		break;
 	case 'P':
-		i = pick_str(&prepositions, sd, dest);
+		i = pick_str(&prepositions, seed, dest);
 		len = strlen(DIST_MEMBER(&prepositions, i));
 		strcpy((dest + len), " the ");
 		len += 5;
-		len += txt_np(dest + len, sd);
+		len += txt_np(dest + len, seed);
 		break;
 	case 'T':
-		i = pick_str(&terminators, sd, --dest); /*terminators should abut previous word */
+		i = pick_str(&terminators, seed, --dest); /*terminators should abut previous word */
 		len = strlen(DIST_MEMBER(&terminators, i));
 		break;
 	} /* end of POS switch statement */
@@ -242,7 +229,7 @@ done:
  *		produce ELIZA-like text of random, bounded length, truncating the last
  *		generated sentence as required
  */
-int dbg_text(char *tgt, int min, int max, int sd)
+int dbg_text(char *tgt, int min, int max, int seed)
 {
 	long length = 0;
 	int wordlen = 0,
@@ -250,11 +237,11 @@ int dbg_text(char *tgt, int min, int max, int sd)
 		s_len;
 	char sentence[MAX_SENT_LEN + 1];
 
-	RANDOM(length, min, max, sd);
+	RANDOM(length, min, max, seed);
 
 	while (wordlen < length)
 	{
-		s_len = txt_sentence(sentence, sd);
+		s_len = txt_sentence(sentence, seed);
 		if (s_len < 0)
 			INTERNAL_ERROR("Bad sentence formation");
 		needed = length - wordlen;
@@ -277,32 +264,3 @@ int dbg_text(char *tgt, int min, int max, int sd)
 
 	return (wordlen);
 }
-
-#ifdef TEST
-tdef tdefs = {NULL};
-
-main()
-{
-	char prattle[401];
-
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "nouns", &nouns);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "verbs", &verbs);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "adjectives", &adjectives);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "adverbs", &adverbs);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "auxillaries", &auxillaries);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "terminators", &terminators);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "articles", &articles);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "prepositions", &prepositions);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "grammar", &grammar);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "np", &np);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "vp", &vp);
-
-	while (1)
-	{
-		dbg_text(&prattle[0], 300, 400, 0);
-		printf("<%s>\n", prattle);
-	}
-
-	return (0);
-}
-#endif /* TEST */
