@@ -8,6 +8,9 @@ add_library(psgen STATIC
     print.c
     qgen.c
     rnd.c
+    speed_seed.c
+    text.c
+    varsub.c
 )
 
 target_compile_definitions(psgen PUBLIC DB2)
