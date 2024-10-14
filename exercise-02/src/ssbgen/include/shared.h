@@ -2,6 +2,16 @@
  *  Sccsid:     @(#)shared.h	2.1.8.1
  *  Modified for SSBM
  */
+
+#ifndef SHARED_H
+#define SHARED_H
+
+#if defined(__STDC__) || defined(__cplusplus)
+#define PROTO(s) s
+#else
+#define PROTO(s) ()
+#endif
+
 #define N_CMNT_LEN 72
 #define N_CMNT_MAX 152
 #define R_CMNT_LEN 72
@@ -94,3 +104,5 @@
 #define S_ADDR_SD 32
 #define S_CMNT_SD 36
 #define L_CMNT_SD 25
+
+#endif

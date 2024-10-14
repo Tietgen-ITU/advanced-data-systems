@@ -46,8 +46,6 @@ long mk_cust PROTO((long n_cust, customer_t *c));
 int pr_cust PROTO((customer_t * c, int mode));
 int ld_cust PROTO((customer_t * c, int mode));
 
-#ifdef SSBM
-
 typedef struct
 {
     DSS_HUGE *okey; /*for clustering line items*/
@@ -68,30 +66,7 @@ typedef struct
     char commit_date[DATE_LEN];
     char shipmode[O_SHIP_MODE_LEN + 1];
 } lineorder_t;
-#else
-typedef struct
-{
-    DSS_HUGE *okey;
-    long partkey;
-    long suppkey;
-    long lcnt;
-    long quantity;
-    long eprice;
-    long discount;
-    long tax;
-    char rflag[1];
-    char lstatus[1];
-    char cdate[DATE_LEN];
-    char sdate[DATE_LEN];
-    char rdate[DATE_LEN];
-    char shipinstruct[MAXAGG_LEN + 1];
-    char shipmode[MAXAGG_LEN + 1];
-    char comment[L_CMNT_MAX + 1];
-    int clen;
-} line_t;
-#endif
 
-#ifdef SSBM
 typedef struct
 {
     DSS_HUGE *okey;
@@ -104,23 +79,6 @@ typedef struct
     long lines;
     lineorder_t lineorders[O_LCNT_MAX];
 } order_t;
-#else
-typedef struct
-{
-    DSS_HUGE *okey;
-    long custkey;
-    char orderstatus;
-    long totalprice;
-    char odate[DATE_LEN];
-    char opriority[MAXAGG_LEN + 1];
-    char clerk[O_CLRK_LEN + 1];
-    long spriority;
-    long lines;
-    char comment[O_CMNT_MAX + 1];
-    int clen;
-    line_t l[O_LCNT_MAX];
-} order_t;
-#endif
 
 /* order.c */
 long mk_order PROTO((long index, order_t *o, long upd_num));

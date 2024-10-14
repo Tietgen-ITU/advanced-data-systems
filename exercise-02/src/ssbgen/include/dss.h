@@ -143,10 +143,10 @@ typedef struct
    char *name;
    char *comment;
    long base;
-   int (*header)();
-   int (*loader[2])();
-   long (*gen_seed)();
-   int (*verify)();
+   int (*header)(void *, int);
+   int (*loader[2])(void *, int);
+   long (*gen_seed)(int, long);
+   int (*verify)(void *, int);
    int child;
    unsigned long vtotal;
 } tdef;

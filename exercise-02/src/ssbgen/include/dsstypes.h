@@ -9,7 +9,6 @@
 /*
  * typedefs
  */
-#ifdef SSBM
 typedef struct
 {
     long custkey;
@@ -25,28 +24,11 @@ typedef struct
     char phone[PHONE_LEN + 1];
     char mktsegment[MAXAGG_LEN + 1];
 } customer_t;
-#else
-typedef struct
-{
-    long custkey;
-    char name[C_NAME_LEN + 1];
-    char address[C_ADDR_MAX + 1];
-    int alen;
-    long nation_code;
-    char phone[PHONE_LEN + 1];
-    long acctbal;
-    char mktsegment[MAXAGG_LEN + 1];
-    char comment[C_CMNT_MAX + 1];
-    int clen;
-} customer_t;
-#endif
 
 /* customers.c */
 long mk_cust PROTO((long n_cust, customer_t *c));
 int pr_cust PROTO((customer_t * c, int mode));
 int ld_cust PROTO((customer_t * c, int mode));
-
-#ifdef SSBM
 
 typedef struct
 {
@@ -68,30 +50,7 @@ typedef struct
     char commit_date[DATE_LEN];
     char shipmode[O_SHIP_MODE_LEN + 1];
 } lineorder_t;
-#else
-typedef struct
-{
-    DSS_HUGE *okey;
-    long partkey;
-    long suppkey;
-    long lcnt;
-    long quantity;
-    long eprice;
-    long discount;
-    long tax;
-    char rflag[1];
-    char lstatus[1];
-    char cdate[DATE_LEN];
-    char sdate[DATE_LEN];
-    char rdate[DATE_LEN];
-    char shipinstruct[MAXAGG_LEN + 1];
-    char shipmode[MAXAGG_LEN + 1];
-    char comment[L_CMNT_MAX + 1];
-    int clen;
-} line_t;
-#endif
 
-#ifdef SSBM
 typedef struct
 {
     DSS_HUGE *okey;
@@ -104,23 +63,6 @@ typedef struct
     long lines;
     lineorder_t lineorders[O_LCNT_MAX];
 } order_t;
-#else
-typedef struct
-{
-    DSS_HUGE *okey;
-    long custkey;
-    char orderstatus;
-    long totalprice;
-    char odate[DATE_LEN];
-    char opriority[MAXAGG_LEN + 1];
-    char clerk[O_CLRK_LEN + 1];
-    long spriority;
-    long lines;
-    char comment[O_CMNT_MAX + 1];
-    int clen;
-    line_t l[O_LCNT_MAX];
-} order_t;
-#endif
 
 /* order.c */
 long mk_order PROTO((long index, order_t *o, long upd_num));
@@ -131,21 +73,6 @@ void ez_sparse PROTO((long index, DSS_HUGE *ok, long seq));
 void hd_sparse PROTO((long index, DSS_HUGE *ok, long seq));
 #endif
 
-#ifdef SSBM
-/*SSBM removes the part supplier table*/
-#else
-typedef struct
-{
-    long partkey;
-    long suppkey;
-    long qty;
-    long scost;
-    char comment[PS_CMNT_MAX + 1];
-    int clen;
-} partsupp_t;
-#endif
-
-#ifdef SSBM
 typedef struct
 {
     long partkey;
@@ -161,31 +88,12 @@ typedef struct
     long size;
     char container[P_CNTR_LEN + 1];
 } part_t;
-#else
-typedef struct
-{
-    long partkey;
-    char name[P_NAME_LEN + 1];
-    int nlen;
-    char mfgr[P_MFG_LEN + 1];
-    char brand[P_BRND_LEN + 1];
-    char type[P_TYPE_LEN + 1];
-    int tlen;
-    long size;
-    char container[P_CNTR_LEN + 1];
-    long retailprice;
-    char comment[P_CMNT_MAX + 1];
-    int clen;
-    partsupp_t s[SUPP_PER_PART];
-} part_t;
-#endif
 
 /* parts.c */
 long mk_part PROTO((long index, part_t *p));
 int pr_part PROTO((part_t * part, int mode));
 int ld_part PROTO((part_t * part, int mode));
 
-#ifdef SSBM
 typedef struct
 {
     long suppkey;
@@ -199,20 +107,6 @@ typedef struct
     char region_name[S_REGION_NAME_LEN + 1];
     char phone[PHONE_LEN + 1];
 } supplier_t;
-#else
-typedef struct
-{
-    long suppkey;
-    char name[S_NAME_LEN + 1];
-    char address[S_ADDR_MAX + 1];
-    int alen;
-    long nation_code;
-    char phone[PHONE_LEN + 1];
-    long acctbal;
-    char comment[S_CMNT_MAX + 1];
-    int clen;
-} supplier_t;
-#endif
 
 /* supplier.c */
 long mk_supp PROTO((long index, supplier_t *s));

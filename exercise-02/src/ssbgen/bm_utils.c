@@ -26,7 +26,8 @@
 #define _GNU_SOURCE
 #endif
 
-#include "dss.h"
+#include "include/dss.h"
+
 #include <stdio.h>
 #include <time.h>
 #include <errno.h>
@@ -79,16 +80,10 @@
 #endif
 #endif
 /* End of lines added by Chuck McDevitt for WIN32 support */
-#include "dsstypes.h"
+#include "include/dsstypes.h"
 
 static char alpha_num[65] =
     "0123456789abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ,";
-
-#if defined(__STDC__) || defined(__cplusplus)
-#define PROTO(s) s
-#else
-#define PROTO(s) ()
-#endif
 
 char *getenv PROTO((const char *name));
 void usage();

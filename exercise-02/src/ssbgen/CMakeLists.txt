@@ -6,7 +6,6 @@ add_library(psgen STATIC
     load_stub.c
     permute.c
     print.c
-    qgen.c
     rnd.c
     speed_seed.c
     text.c

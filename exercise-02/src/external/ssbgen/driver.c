@@ -296,11 +296,7 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 	{
 		INIT_HUGE(o.okey);
 		for (i = 0; i < O_LCNT_MAX; i++)
-#ifdef SSBM
 			INIT_HUGE(o.lineorders[i].okey);
-#else
-			INIT_HUGE(o.l[i].okey);
-#endif
 		init = 1;
 	}
 

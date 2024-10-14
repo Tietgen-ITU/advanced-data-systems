@@ -5,7 +5,7 @@
 #define NO_FUNC (int (*)()) NULL   /* to clean up tdefs */
 #define NO_LFUNC (long (*)()) NULL /* to clean up tdefs */
 
-#include "config.h"
+#include "include/config.h"
 #include <stdlib.h>
 #if (defined(_POSIX_) || !defined(WIN32)) /* Change for Windows NT */
 #ifndef DOS
@@ -56,9 +56,9 @@
 #pragma warning(default : 4214)
 #endif
 
-#include "dss.h"
-#include "dsstypes.h"
-#include "bcd2.h"
+#include "include/dss.h"
+#include "include/dsstypes.h"
+#include "include/bcd2.h"
 
 /*
  * Function prototypes
