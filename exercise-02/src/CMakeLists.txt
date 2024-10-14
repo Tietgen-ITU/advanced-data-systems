@@ -1,10 +1,16 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.30)
 
-project(ssbgen)
-add_executable(ssbgen main.cpp)
+project(sgen)
+add_executable(sgen main.cpp)
 
-add_subdirectory(external/ssbgen)
+add_subdirectory(ssbgen)
 
-target_link_directories(ssbgen PRIVATE ${CMAKE_SOURCE_DIR}/out/build/external/ssbgen)
-target_link_libraries(ssbgen 
-                      PRIVATE psgen)
+target_link_libraries(sgen 
+                      PRIVATE ssbgen)
+target_include_directories(sgen 
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ssbgen/include)
+
+target_compile_definitions(sgen PUBLIC DB2)
+target_compile_definitions(sgen PUBLIC MAC)
+target_compile_definitions(sgen PUBLIC SSBM)
+target_compile_definitions(sgen PUBLIC DBNAME="dss")

@@ -1,4 +1,4 @@
-add_library(psgen STATIC
+add_library(ssbgen STATIC
     bcd2.c
     bm_utils.c
     build.c
@@ -11,8 +11,3 @@ add_library(psgen STATIC
     text.c
     varsub.c
 )
-
-target_compile_definitions(psgen PUBLIC DB2)
-target_compile_definitions(psgen PUBLIC MAC)
-target_compile_definitions(psgen PUBLIC SSBM)
-target_compile_definitions(psgen PUBLIC DBNAME="dss")

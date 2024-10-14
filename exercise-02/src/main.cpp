@@ -1,12 +1,9 @@
 extern "C"
 {
-#include "external/ssbgen/dss.h"
+#include "ssbgen/driver.c"
 }
-
-#include "external/ssbgen/driver.c"
 
 int main()
 {
-
     return 0;
 }

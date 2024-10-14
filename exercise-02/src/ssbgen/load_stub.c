@@ -10,9 +10,9 @@
  */
 
 #include <stdio.h>
-#include "config.h"
-#include "dss.h"
-#include "dsstypes.h"
+#include "include/config.h"
+#include "include/dss.h"
+#include "include/dsstypes.h"
 
 int close_direct(void)
 {
@@ -168,80 +168,8 @@ int hd_nation(FILE *f)
     return (0);
 }
 
-#ifdef SSBM
-#else
-int ld_nation(code_t *cp, int mode)
-{
-    static int count = 0;
-
-    if (!count++)
-        printf("%s %s\n",
-               "No load routine has been defined",
-               "for the nation table");
-
-    return (0);
-}
-
-int hd_region(FILE *f)
-{
-    static int count = 0;
-
-    if (!count++)
-        printf("No header has been defined for the region table\n");
-
-    return (0);
-}
-
-int ld_region(code_t *cp, int mode)
-{
-    static int count = 0;
-
-    if (!count++)
-        printf("%s %s\n",
-               "No load routine has been defined",
-               "for the region table");
-
-    return (0);
-}
-
-int ld_order_line(order_t *p, int mode)
-{
-    ld_order(p, mode);
-    ld_line(p, mode);
-
-    return (0);
-}
-
-int hd_order_line(FILE *f)
-{
-    hd_order(f);
-    hd_line(f);
-
-    return (0);
-}
-
-int ld_part_psupp(part_t *p, int mode)
-{
-    ld_part(p, mode);
-    ld_psupp(p, mode);
-
-    return (0);
-}
-
-int hd_part_psupp(FILE *f)
-{
-    hd_part(f);
-    hd_psupp(f);
-
-    return (0);
-}
-#endif
-
-#ifdef SSBM
 int ld_date(date_t *d, int mode)
 {
     /*do nothing for now*/
     return (0);
 }
-
-#endif

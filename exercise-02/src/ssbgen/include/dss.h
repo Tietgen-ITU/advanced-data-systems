@@ -143,10 +143,10 @@ typedef struct
    char *name;
    char *comment;
    long base;
-   int (*header)(void *, int);
-   int (*loader[2])(void *, int);
+   int (*header)(FILE *);
+   int (*loader[2])();
    long (*gen_seed)(int, long);
-   int (*verify)(void *, int);
+   int (*verify)();
    int child;
    unsigned long vtotal;
 } tdef;
@@ -179,9 +179,6 @@ int pick_str PROTO((distribution * s, int c, char *target));
 void agg_str PROTO((distribution * set, long count, long col, char *dest));
 void read_dist PROTO((char *path, char *name, distribution *target));
 void embed_str PROTO((distribution * d, int min, int max, int stream, char *dest));
-#ifndef STDLIB_HAS_GETOPT
-int getopt PROTO((int arg_cnt, char **arg_vect, char *oprions));
-#endif /* STDLIB_HAS_GETOPT */
 long set_state PROTO((int t, long scale, long procs, long step, long *e));
 
 /* rnd.c */

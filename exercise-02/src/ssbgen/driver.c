@@ -151,18 +151,20 @@ int vrf_line(order_t *o, int mode);
 int vrf_order(order_t *o, int mode);
 int vrf_date(date_t, int mode);
 
+typedef int (*func_ptr)();
+
 tdef tdefs[] =
 	{
 
-		{"part.tbl", "part table", 200000, hd_part, {pr_part, ld_part}, sd_part, vrf_part, PSUPP, 0},
+		{"part.tbl", "part table", 200000, hd_part, {(func_ptr)pr_part, (func_ptr)ld_part}, sd_part, (func_ptr)vrf_part, PSUPP, 0},
 		{0, 0, 0, 0, {0, 0}, 0, 0, 0, 0},
-		{"supplier.tbl", "suppliers table", 2000, hd_supp, {pr_supp, ld_supp}, sd_supp, vrf_supp, NONE, 0},
+		{"supplier.tbl", "suppliers table", 2000, hd_supp, {(func_ptr)pr_supp, (func_ptr)ld_supp}, sd_supp, (func_ptr)vrf_supp, NONE, 0},
 
-		{"customer.tbl", "customers table", 30000, hd_cust, {pr_cust, ld_cust}, sd_cust, vrf_cust, NONE, 0},
-		{"date.tbl", "date table", 2556, 0, {pr_date, ld_date}, 0, vrf_date, NONE, 0},
+		{"customer.tbl", "customers table", 30000, hd_cust, {(func_ptr)pr_cust, (func_ptr)ld_cust}, sd_cust, (func_ptr)vrf_cust, NONE, 0},
+		{"date.tbl", "date table", 2556, 0, {(func_ptr)pr_date, (func_ptr)ld_date}, 0, (func_ptr)vrf_date, NONE, 0},
 		/*line order is SF*1,500,000, however due to the implementation
 		  the base here is 150,000 instead if 1500,000*/
-		{"lineorder.tbl", "lineorder table", 150000, hd_line, {pr_line, ld_line}, sd_line, vrf_line, NONE, 0},
+		{"lineorder.tbl", "lineorder table", 150000, hd_line, {(func_ptr)pr_line, (func_ptr)ld_line}, sd_line, (func_ptr)vrf_line, NONE, 0},
 		{0, 0, 0, 0, {0, 0}, 0, 0, 0, 0},
 		{0, 0, 0, 0, {0, 0}, 0, 0, 0, 0},
 		{0, 0, 0, 0, {0, 0}, 0, 0, 0, 0},
@@ -273,11 +275,7 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 	supplier_t supp;
 	customer_t cust;
 	part_t part;
-#ifdef SSBM
 	date_t dt;
-#else
-	code_t code;
-#endif
 	static int completed = 0;
 	static int init = 0;
 	long i;
@@ -296,11 +294,7 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 	{
 		INIT_HUGE(o.okey);
 		for (i = 0; i < O_LCNT_MAX; i++)
-#ifdef SSBM
 			INIT_HUGE(o.lineorders[i].okey);
-#else
-			INIT_HUGE(o.l[i].okey);
-#endif
 		init = 1;
 	}
 
@@ -312,11 +306,6 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 		switch (tnum)
 		{
 		case LINE:
-#ifdef SSBM
-#else
-		case ORDER:
-		case ORDER_LINE:
-#endif
 			mk_order(i, &o, upd_num % 10000);
 
 			if (insert_segments && (upd_num > 0))
@@ -339,67 +328,42 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 
 			if (set_seeds == 0)
 				if (validate)
-					tdefs[tnum].verify(&o, 0);
+					((int (*)(order_t *, int))tdefs[tnum].verify)(&o, 0);
 				else
-					tdefs[tnum].loader[direct](&o, upd_num);
+					((int (*)(order_t *, int))tdefs[tnum].loader[direct])(&o, upd_num);
 			break;
 		case SUPP:
 			mk_supp(i, &supp);
 			if (set_seeds == 0)
 				if (validate)
-					tdefs[tnum].verify(&supp, 0);
+					((int (*)(supplier_t *, int))tdefs[tnum].verify)(&supp, 0);
 				else
-					tdefs[tnum].loader[direct](&supp, upd_num);
+					((int (*)(supplier_t *, int))tdefs[tnum].loader[direct])(&supp, upd_num);
 			break;
 		case CUST:
 			mk_cust(i, &cust);
 			if (set_seeds == 0)
 				if (validate)
-					tdefs[tnum].verify(&cust, 0);
+					((int (*)(customer_t *, int))tdefs[tnum].verify)(&cust, 0);
 				else
-					tdefs[tnum].loader[direct](&cust, upd_num);
+					((int (*)(customer_t *, int))tdefs[tnum].loader[direct])(&cust, upd_num);
 			break;
-#ifdef SSBM
 		case PART:
-#else
-		case PSUPP:
-		case PART:
-		case PART_PSUPP:
-#endif
 			mk_part(i, &part);
 			if (set_seeds == 0)
 				if (validate)
-					tdefs[tnum].verify(&part, 0);
+					((int (*)(part_t *, int))tdefs[tnum].verify)(&part, 0);
 				else
-					tdefs[tnum].loader[direct](&part, upd_num);
+					((int (*)(part_t *, int))tdefs[tnum].loader[direct])(&part, upd_num);
 			break;
-#ifdef SSBM
 		case DATE:
 			mk_date(i, &dt);
 			if (set_seeds == 0)
 				if (validate)
-					tdefs[tnum].verify(&dt, 0);
+					((int (*)(date_t *, int))tdefs[tnum].verify)(&dt, 0);
 				else
-					tdefs[tnum].loader[direct](&dt, 0);
+					((int (*)(date_t *, int))tdefs[tnum].loader[direct])(&dt, 0);
 			break;
-#else
-		case NATION:
-			mk_nation(i, &code);
-			if (set_seeds == 0)
-				if (validate)
-					tdefs[tnum].verify(&code, 0);
-				else
-					tdefs[tnum].loader[direct](&code, 0);
-			break;
-		case REGION:
-			mk_region(i, &code);
-			if (set_seeds == 0)
-				if (validate)
-					tdefs[tnum].verify(&code, 0);
-				else
-					tdefs[tnum].loader[direct](&code, 0);
-			break;
-#endif
 		}
 		row_stop(tnum);
 		if (set_seeds && (i % tdefs[tnum].base) < 2)
@@ -413,7 +377,6 @@ void gen_tbl(int tnum, long start, long count, long upd_num)
 
 void usage(void)
 {
-#ifdef SSBM
 	fprintf(stderr, "%s\n%s\n\t%s\n%s %s\n\n",
 			"USAGE:",
 			"dbgen [-{vfFD}] [-O {fhmsv}][-T {pcsdla}]",
@@ -421,14 +384,6 @@ void usage(void)
 			"dbgen [-v] [-O {dfhmr}] [-s <scale>]",
 			"[-U <updates>] [-r <percent>]");
 
-#else
-	fprintf(stderr, "%s\n%s\n\t%s\n%s %s\n\n",
-			"USAGE:",
-			"dbgen [-{vfFD}] [-O {fhmsv}][-T {pcsoPSOL}]",
-			"[-s <scale>][-C <procs>][-S <step>]",
-			"dbgen [-v] [-O {dfhmr}] [-s <scale>]",
-			"[-U <updates>] [-r <percent>]");
-#endif
 	fprintf(stderr, "-b <s> -- load distributions for <s>\n");
 	fprintf(stderr, "-C <n> -- use <n> processes to generate data\n");
 	fprintf(stderr, "          [Under DOS, must be used with -S]\n");
@@ -451,25 +406,11 @@ void usage(void)
 	fprintf(stderr, "-s <n> -- set Scale Factor (SF) to  <n> \n");
 	fprintf(stderr, "-S <n> -- build the <n>th step of the data/update set\n");
 
-#ifdef SSBM
 	fprintf(stderr, "-T c   -- generate cutomers dimension table ONLY\n");
 	fprintf(stderr, "-T p   -- generate parts dimension table ONLY\n");
 	fprintf(stderr, "-T s   -- generate suppliers dimension table ONLY\n");
 	fprintf(stderr, "-T d   -- generate date dimension table ONLY\n");
 	fprintf(stderr, "-T l   -- generate lineorder fact table ONLY\n");
-#else
-	fprintf(stderr, "-T c   -- generate cutomers ONLY\n");
-	fprintf(stderr, "-T l   -- generate nation/region ONLY\n");
-	fprintf(stderr, "-T L   -- generate lineitem ONLY\n");
-	fprintf(stderr, "-T n   -- generate nation ONLY\n");
-	fprintf(stderr, "-T o   -- generate orders/lineitem ONLY\n");
-	fprintf(stderr, "-T O   -- generate orders ONLY\n");
-	fprintf(stderr, "-T p   -- generate parts/partsupp ONLY\n");
-	fprintf(stderr, "-T P   -- generate parts ONLY\n");
-	fprintf(stderr, "-T r   -- generate region ONLY\n");
-	fprintf(stderr, "-T s   -- generate suppliers ONLY\n");
-	fprintf(stderr, "-T S   -- generate partsupp ONLY\n");
-#endif
 
 	fprintf(stderr, "-U <s> -- generate <s> update sets\n");
 	fprintf(stderr, "-v     -- enable VERBOSE mode\n");
@@ -617,7 +558,6 @@ void process_options(int count, char **vector)
 		case 'T': /* generate a specifc table */
 			switch (*optarg)
 			{
-#ifdef SSBM
 			case 'c': /* generate customer ONLY */
 				table = 1 << CUST;
 				break;
@@ -640,42 +580,6 @@ void process_options(int count, char **vector)
 				table |= 1 << DATE;
 				table |= 1 << LINE;
 				break;
-#else
-			case 'c': /* generate customer ONLY */
-				table = 1 << CUST;
-				break;
-			case 'L': /* generate lineitems ONLY */
-				table = 1 << LINE;
-				break;
-			case 'l': /* generate code table ONLY */
-				table = 1 << NATION;
-				table |= 1 << REGION;
-				break;
-			case 'n': /* generate nation table ONLY */
-				table = 1 << NATION;
-				break;
-			case 'O': /* generate orders ONLY */
-				table = 1 << ORDER;
-				break;
-			case 'o': /* generate orders/lineitems ONLY */
-				table = 1 << ORDER_LINE;
-				break;
-			case 'P': /* generate part ONLY */
-				table = 1 << PART;
-				break;
-			case 'p': /* generate part/partsupp ONLY */
-				table = 1 << PART_PSUPP;
-				break;
-			case 'r': /* generate region table ONLY */
-				table = 1 << REGION;
-				break;
-			case 'S': /* generate partsupp ONLY */
-				table = 1 << PSUPP;
-				break;
-			case 's': /* generate suppliers ONLY */
-				table = 1 << SUPP;
-				break;
-#endif
 			default:
 				fprintf(stderr, "Unknown table name %s\n",
 						optarg);
@@ -777,19 +681,11 @@ void process_options(int count, char **vector)
 			exit(1);
 		}
 
-#ifndef DOS
 	if (children != 1 && step == -1)
 	{
-		pids = malloc(children * sizeof(pid_t));
+		pids = (int *)malloc(children * sizeof(pid_t));
 		MALLOC_CHECK(pids)
 	}
-#else
-	if (children != 1 && step < 0)
-	{
-		fprintf(stderr, "ERROR: -C must be accompanied by -S on this platform\n");
-		exit(1);
-	}
-#endif /* DOS */
 
 	return;
 }
@@ -800,7 +696,7 @@ void process_options(int count, char **vector)
  * assumes the existance of getopt() to clean up the command
  * line handling
  */
-int main(int ac, char **av)
+int gen_main(int ac, char **av)
 {
 	int i;
 
@@ -826,17 +722,8 @@ int main(int ac, char **av)
 	updates = 0;
 	refresh = UPD_PCT;
 	step = -1;
-#ifdef SSBM
 	tdefs[LINE].base *=
 		ORDERS_PER_CUST; /* have to do this after init */
-#else
-	tdefs[ORDER].base *=
-		ORDERS_PER_CUST; /* have to do this after init */
-	tdefs[LINE].base *=
-		ORDERS_PER_CUST; /* have to do this after init */
-	tdefs[ORDER_LINE].base *=
-		ORDERS_PER_CUST; /* have to do this after init */
-#endif
 	fnames = 0;
 	db_name = NULL;
 	gen_sql = 0;
@@ -922,18 +809,15 @@ int main(int ac, char **av)
 	/*
 	 * open database connection or set all the file names, as appropriate
 	 */
-	if (direct)
-		prep_direct((db_name) ? db_name : DBNAME);
-	else if (fnames)
-		for (i = PART; i <= REGION; i++)
-		{
-			if (table & (1 << i))
-				if (set_files(i, -1))
-				{
-					fprintf(stderr, "Load aborted!\n");
-					exit(1);
-				}
-		}
+	for (i = PART; i <= REGION; i++)
+	{
+		if (table & (1 << i))
+			if (set_files(i, -1))
+			{
+				fprintf(stderr, "Load aborted!\n");
+				exit(1);
+			}
+	}
 
 	/*
 	 * traverse the tables, invoking the appropriate data generation routine for any to be built

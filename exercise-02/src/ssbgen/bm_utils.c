@@ -551,8 +551,6 @@ long set_state(int table, long sf, long procs, long step, long *extra_rows)
             tdefs[tdefs[table].child].gen_seed(0, rowcount);
     }
     *extra_rows = remainder % procs;
-    if (step > procs) /* moving to the end to generate updates */
-        tdefs[table].gen_seed(*extra_rows);
 
     return (result);
 }
