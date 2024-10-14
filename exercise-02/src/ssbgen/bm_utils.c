@@ -248,32 +248,39 @@ long julian(long date)
 }
 
 /*
+Reads a line from the source string into the buffer, stopping at a newline or the end of the string.
+
+Credit: to the TPC-H extension of DuckDB for this function.
+*/
+static char read_line_into_buffer(char *buffer, size_t bufsiz, const char **src)
+{
+    size_t count = 0;
+    while (**src && count < bufsiz - 1)
+    {
+        buffer[count++] = **src;
+        if (**src == '\n')
+        {
+            (*src)++;
+            break;
+        }
+        (*src)++;
+    }
+    buffer[count] = '\0';
+    return **src;
+}
+
+#include "include/dist_dss.h"
+/*
  * load a distribution from a flat file into the target structure;
  * should be rewritten to allow multiple dists in a file
  */
-void read_dist(char *path, char *name, distribution *target)
+void read_dist(char *name, distribution *target)
 {
-    FILE *fp;
-    char line[256],
-        token[256],
-        *c;
-    long weight,
-        count = 0,
-        name_set = 0;
+    const char *src = ssbdists_dss;
+    char line[256], token[256], *c;
+    long weight, count = 0, name_set = 0;
 
-    if (d_path == NULL)
-    {
-        sprintf(line, "%s%c%s",
-                env_config(CONFIG_TAG, CONFIG_DFLT), PATH_SEP, path);
-        fp = fopen(line, "r");
-        OPEN_CHECK(fp, line);
-    }
-    else
-    {
-        fp = fopen(d_path, "r");
-        OPEN_CHECK(fp, d_path);
-    }
-    while (fgets(line, sizeof(line), fp) != NULL)
+    while (read_line_into_buffer(line, sizeof(line), &src))
     {
         if ((c = strchr(line, '\n')) != NULL)
             *c = '\0';
@@ -295,7 +302,6 @@ void read_dist(char *path, char *name, distribution *target)
         {
             if (!dssncasecmp(line, "END", 3))
             {
-                fclose(fp);
                 return;
             }
         }
@@ -306,31 +312,26 @@ void read_dist(char *path, char *name, distribution *target)
         if (!dsscasecmp(token, "count"))
         {
             target->count = weight;
-            target->list =
-                (set_member *)
-                    malloc((size_t)(weight * sizeof(set_member)));
+            target->list = (set_member *)malloc((size_t)(weight * sizeof(set_member)));
             MALLOC_CHECK(target->list);
             target->max = 0;
             continue;
         }
-        target->list[count].text =
-            (char *)malloc((size_t)(strlen(token) + 1));
+        target->list[count].text = (char *)malloc((size_t)(strlen(token) + 1));
         MALLOC_CHECK(target->list[count].text);
         strcpy(target->list[count].text, token);
         target->max += weight;
         target->list[count].weight = target->max;
 
         count += 1;
-    } /* while fgets() */
+    } /* while read_line_into_buffer */
 
     if (count != target->count)
     {
         fprintf(stderr, "Read error on dist '%s'\n", name);
-        fclose(fp);
         exit(1);
     }
     target->permute = (long *)NULL;
-    fclose(fp);
     return;
 }
 

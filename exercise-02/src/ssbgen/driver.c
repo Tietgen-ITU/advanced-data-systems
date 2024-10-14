@@ -237,33 +237,33 @@ int set_files(int i, int pload)
  */
 void load_dists(void)
 {
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "p_cntr", &p_cntr_set);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "colors", &colors);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "p_types", &p_types_set);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "nations", &nations);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "regions", &regions);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "o_oprio",
+	read_dist("p_cntr", &p_cntr_set);
+	read_dist("colors", &colors);
+	read_dist("p_types", &p_types_set);
+	read_dist("nations", &nations);
+	read_dist("regions", &regions);
+	read_dist("o_oprio",
 			  &o_priority_set);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "instruct",
+	read_dist("instruct",
 			  &l_instruct_set);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "smode", &l_smode_set);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "category",
+	read_dist("smode", &l_smode_set);
+	read_dist("category",
 			  &l_category_set);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "rflag", &l_rflag_set);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "msegmnt", &c_mseg_set);
+	read_dist("rflag", &l_rflag_set);
+	read_dist("msegmnt", &c_mseg_set);
 
 	/* load the distributions that contain text generation */
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "nouns", &nouns);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "verbs", &verbs);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "adjectives", &adjectives);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "adverbs", &adverbs);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "auxillaries", &auxillaries);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "terminators", &terminators);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "articles", &articles);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "prepositions", &prepositions);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "grammar", &grammar);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "np", &np);
-	read_dist(env_config(DIST_TAG, DIST_DFLT), "vp", &vp);
+	read_dist("nouns", &nouns);
+	read_dist("verbs", &verbs);
+	read_dist("adjectives", &adjectives);
+	read_dist("adverbs", &adverbs);
+	read_dist("auxillaries", &auxillaries);
+	read_dist("terminators", &terminators);
+	read_dist("articles", &articles);
+	read_dist("prepositions", &prepositions);
+	read_dist("grammar", &grammar);
+	read_dist("np", &np);
+	read_dist("vp", &vp);
 }
 
 /*

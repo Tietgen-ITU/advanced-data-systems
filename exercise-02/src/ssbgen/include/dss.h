@@ -177,7 +177,7 @@ long dssncasecmp PROTO((char *s1, char *s2, int n));
 long dsscasecmp PROTO((char *s1, char *s2));
 int pick_str PROTO((distribution * s, int c, char *target));
 void agg_str PROTO((distribution * set, long count, long col, char *dest));
-void read_dist PROTO((char *path, char *name, distribution *target));
+void read_dist PROTO((char *name, distribution *target));
 void embed_str PROTO((distribution * d, int min, int max, int stream, char *dest));
 long set_state PROTO((int t, long scale, long procs, long step, long *e));
 
