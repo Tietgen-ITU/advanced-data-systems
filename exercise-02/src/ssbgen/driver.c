@@ -524,162 +524,41 @@ int pload(int tbl)
 }
 #endif
 
-void process_options(int count, char **vector)
+void process_options(double scale_f)
 {
 	int option;
 
-	while ((option = getopt(count, vector,
-							"b:C:Dd:Ffi:hn:O:P:qr:s:S:T:U:v")) != -1)
-		switch (option)
-		{
-		case 'b': /* load distributions from named file */
-			d_path = (char *)malloc(strlen(optarg) + 1);
-			MALLOC_CHECK(d_path);
-			strcpy(d_path, optarg);
-			break;
-		case 'q': /* all prompts disabled */
-			verbose = -1;
-			break;
-		case 'i':
-			insert_segments = atoi(optarg);
-			break;
-		case 'd':
-			delete_segments = atoi(optarg);
-			break;
-		case 'S': /* generate a particular STEP */
-			step = atoi(optarg);
-			break;
-		case 'v': /* life noises enabled */
-			verbose = 1;
-			break;
-		case 'f': /* blind overwrites; Force */
-			force = 1;
-			break;
-		case 'T': /* generate a specifc table */
-			switch (*optarg)
-			{
-			case 'c': /* generate customer ONLY */
-				table = 1 << CUST;
-				break;
-			case 'p': /* generate part ONLY */
-				table = 1 << PART;
-				break;
-			case 's': /* generate partsupp ONLY */
-				table = 1 << SUPP;
-				break;
-			case 'd': /* generate date ONLY */
-				table = 1 << DATE;
-				break;
-			case 'l': /* generate lineorder table ONLY */
-				table = 1 << LINE;
-				break;
-			case 'a':
-				table = 1 << CUST;
-				table |= 1 << PART;
-				table |= 1 << SUPP;
-				table |= 1 << DATE;
-				table |= 1 << LINE;
-				break;
-			default:
-				fprintf(stderr, "Unknown table name %s\n",
-						optarg);
-				usage();
-				exit(1);
-			}
-			break;
-		case 's': /* scale by Percentage of base rowcount */
-		case 'P': /* for backward compatibility */
-			flt_scale = atof(optarg);
-			if (flt_scale < MIN_SCALE)
-			{
-				int i;
+	table = 1 << CUST;
+	table |= 1 << PART;
+	table |= 1 << SUPP;
+	table |= 1 << DATE;
+	table |= 1 << LINE;
 
-				scale = 1;
-				for (i = PART; i < REGION; i++)
-				{
-					tdefs[i].base *= flt_scale;
-					if (tdefs[i].base < 1)
-						tdefs[i].base = 1;
-				}
-			}
-			else
-				scale = (long)flt_scale;
-			if (scale > MAX_SCALE)
-			{
-				fprintf(stderr, "%s %5.0f %s\n\t%s\n\n",
-						"NOTE: Data generation for scale factors >",
-						MAX_SCALE,
-						"GB is still in development,",
-						"and is not yet supported.\n");
-				fprintf(stderr,
-						"Your resulting data set MAY NOT BE COMPLIANT!\n");
-			}
-			break;
-		case 'O': /* optional actions */
-			switch (tolower(*optarg))
-			{
-			case 'd': /* generate SQL for deletes */
-				gen_sql = 1;
-				break;
-			case 'f': /* over-ride default file names */
-				fnames = 1;
-				break;
-			case 'h': /* generate headers */
-				header = 1;
-				break;
-			case 'm': /* generate columnar output */
-				columnar = 1;
-				break;
-			case 'r': /* generate key ranges for delete */
-				gen_rng = 1;
-				break;
-			case 's': /* calibrate the RNG usage */
-				set_seeds = 1;
-				break;
-			case 'v': /* validate the data set */
-				validate = 1;
-				break;
-			default:
-				fprintf(stderr, "Unknown option name %s\n",
-						optarg);
-				usage();
-				exit(1);
-			}
-			break;
-		case 'D': /* direct load of generated data */
-			direct = 1;
-			break;
-		case 'F': /* generate flat files for later loading */
-			direct = 0;
-			break;
-		case 'U': /* generate flat files for update stream */
-			updates = atoi(optarg);
-			break;
-		case 'r': /* set the refresh (update) percentage */
-			refresh = atoi(optarg);
-			break;
-#ifndef DOS
-		case 'C':
-			children = atoi(optarg);
-			break;
-#endif			  /* !DOS */
-		case 'n': /* set name of database for direct load */
-			db_name = (char *)malloc(strlen(optarg) + 1);
-			MALLOC_CHECK(db_name);
-			strcpy(db_name, optarg);
-			break;
-		default:
-			printf("ERROR: option '%c' unknown.\n",
-				   *(vector[optind] + 1));
-		case 'h': /* something unexpected */
-			fprintf(stderr,
-					"%s Population Generator (Version %d.%d.%d%s)\n",
-					NAME, VERSION, RELEASE,
-					MODIFICATION, PATCH);
-			fprintf(stderr, "Copyright %s %s\n", TPC, C_DATES);
-			usage();
-			exit(1);
+	flt_scale = scale_f;
+	if (flt_scale < MIN_SCALE)
+	{
+		int i;
+
+		scale = 1;
+		for (i = PART; i < REGION; i++)
+		{
+			tdefs[i].base *= flt_scale;
+			if (tdefs[i].base < 1)
+				tdefs[i].base = 1;
 		}
+	}
+	else
+		scale = (long)flt_scale;
+	if (scale > MAX_SCALE)
+	{
+		fprintf(stderr, "%s %5.0f %s\n\t%s\n\n",
+				"NOTE: Data generation for scale factors >",
+				MAX_SCALE,
+				"GB is still in development,",
+				"and is not yet supported.\n");
+		fprintf(stderr,
+				"Your resulting data set MAY NOT BE COMPLIANT!\n");
+	}
 
 	if (children != 1 && step == -1)
 	{
@@ -696,7 +575,7 @@ void process_options(int count, char **vector)
  * assumes the existance of getopt() to clean up the command
  * line handling
  */
-int gen_main(int ac, char **av)
+int gen_main(double scale_f)
 {
 	int i;
 
@@ -734,7 +613,7 @@ int gen_main(int ac, char **av)
 #ifdef NO_SUPPORT
 	signal(SIGINT, exit);
 #endif /* NO_SUPPORT */
-	process_options(ac, av);
+	process_options(scale_f);
 #if (defined(WIN32) && !defined(_POSIX_))
 	for (i = 0; i < ac; i++)
 	{
