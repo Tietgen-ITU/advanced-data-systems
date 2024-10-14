@@ -637,51 +637,6 @@ int gen_main(double scale_f)
 	tdefs[NATION].base = nations.count;
 	tdefs[REGION].base = regions.count;
 
-	/*
-	 * updates are never parallelized
-	 */
-	if (updates)
-	{
-		/*
-		 * set RNG to start generating rows beyond SF=scale
-		 */
-		double fix1;
-
-		set_state(LINE, scale, 1, 2, (long *)&i);
-		fix1 = (double)tdefs[LINE].base / (double)10000; /*represent the %% percentage (n/100)%*/
-		rowcnt = (int)(fix1 * scale * refresh);
-		if (step > 0)
-		{
-			/*
-			 * adjust RNG for any prior update generation
-			 */
-			sd_order(0, rowcnt * (step - 1));
-			sd_line(0, rowcnt * (step - 1));
-			upd_num = step - 1;
-		}
-		else
-			upd_num = 0;
-
-		while (upd_num < updates)
-		{
-			if (verbose > 0)
-				fprintf(stderr,
-						"Generating update pair #%d for %s [pid: %d]",
-						upd_num + 1, tdefs[LINE].comment, DSS_PROC);
-			insert_orders_segment = 0;
-			insert_lineitem_segment = 0;
-			delete_segment = 0;
-			minrow = upd_num * rowcnt + 1;
-			gen_tbl(LINE, minrow, rowcnt, upd_num + 1);
-			if (verbose > 0)
-				fprintf(stderr, "done.\n");
-			pr_drange(LINE, minrow, rowcnt, upd_num + 1);
-			upd_num++;
-		}
-
-		exit(0);
-	}
-
 	/**
 	** actual data generation section starts here
 	**/
