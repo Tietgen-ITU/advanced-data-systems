@@ -1,0 +1,13 @@
+{
+    "makefile.configureOnOpen": false,
+    "files.associations": {
+        "dss.h": "c",
+        "dsstypes.h": "c",
+        "unordered_map": "c",
+        "bitset": "c",
+        "format": "c",
+        "driver.c": "cpp",
+        "ratio": "cpp",
+        "string": "cpp"
+    }
+}

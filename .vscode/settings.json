@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "fcntl.h": "c",
+        "unistd.h": "c",
+        "bm_utils.c": "c",
+        "driver.c": "cpp",
+        "dsstypes.h": "c",
+        "__locale": "cpp",
+        "string": "cpp"
+    }
+}
