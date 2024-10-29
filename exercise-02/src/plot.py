@@ -11,10 +11,9 @@ import numpy as np
 
 CURRENT_WORKING_DIRECTORY = pathlib.Path(__file__).parent.resolve()
 
-markers = ['o', 's', '^', 'D', 'v']
-line_styles = ['-', '--', '-.', ':', '-']
-
-
+markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'H', '+', 'x']
+line_styles = ['-', '--', '-.', ':', '-', '--', '-.', ':', '-', '--', '-.', ':', '-']
+hatch_patterns = ['///', '\\\\', '...', '/', '\\', '-', 'O' ]
 
 @dataclass
 class Measurement:
@@ -130,14 +129,52 @@ def plot_elapsed(groups: list[MeasurementGroup], name: str = "elapsed_line"):
         plt.savefig(out_path,
                 format=format, bbox_inches="tight")
 
+def plot_thread_elapsed(groups: list[MeasurementGroup], name: str = "elapsed_thread_line"):
+    y_max = max(group.max_elapsed_time for group in groups)
+    y_min = min(group.min_elapsed_time for group in groups)
+
+    for i, t in enumerate(get_thread_counts(groups)):
+        plt.figure()
+        ax = plt.gca()
+        plt.ylim(y_min*0.95, y_max*1.05)
+
+        for q_idx, query_name in enumerate(get_queries(groups)):
+            gs = [group for group in groups if group.query_name == query_name and group.thread_count == t]
+            gs.sort(key=lambda x: x.scale_factor)
+
+            xs = [group.scale_factor for group in gs]
+            ys = [group.average_by("elapsed_time") for group in gs]
+
+            marker = markers[q_idx]
+            line = line_styles[q_idx]
+            plt.plot(xs, ys, 
+                    marker=marker, 
+                    linestyle=line,
+                    markerfacecolor=None, 
+                    label=f"Query {query_name}")
+
+            plt.title(f"Query elapsed time using {t} threads")
+
+        plt.legend()
+        plt.ylabel("Query Elapsed Time (s)")
+        plt.xlabel("Scale Factor")
+
+        format = "pdf"
+        out_path = get_plot_path(f"elapsed-t{t}", name, format)
+        plt.savefig(out_path,
+                format=format, bbox_inches="tight")
+
 def plot_scale_bar_elapsed(groups: list[MeasurementGroup], name: str = "elapsed_bar"):
-    y_max = max(group.max_elapsed_time*1000 for group in groups)
-    y_min = min(group.min_elapsed_time*1000 for group in groups)
+    y_max = max(group.average_by("elapsed_time")*1000 for group in groups if group.thread_count == 4)
+    y_min = min(group.min_elapsed_time*1000 for group in groups if group.thread_count == 4) 
 
     categories = get_queries(groups)
     x = np.arange(len(categories))
 
     for i, thread in enumerate(get_thread_counts(groups)):
+        if thread != 4:
+            continue
+
         elapsed_groups = defaultdict(lambda: list())
         scale_factors = get_scale_factors(groups)
 
@@ -151,24 +188,65 @@ def plot_scale_bar_elapsed(groups: list[MeasurementGroup], name: str = "elapsed_
 
         width = 0.25  # the width of the bars
         multiplier = 0
-        for attribute, measurement in elapsed_groups.items():
+        for idx, (attribute, measurement) in enumerate(reversed(elapsed_groups.items())):
             offset = width * multiplier
-            rects = ax.bar(x + offset, measurement, width, label=attribute)
-            ax.bar_label(rects, padding=3)
+            rects = ax.bar(x + offset, measurement, width, hatch=hatch_patterns[idx % len(scale_factors)], label=attribute)
+            # ax.bar_label(rects, padding=3)
             multiplier += 1
 
         # Add some text for labels, title and custom x-axis tick labels, etc.
         ax.set_ylabel('Query Elapsed Time(ms)')
-        ax.set_title('Scale Factors Elapsed Time for each Query')
+        ax.set_xlabel('Query')
+        ax.set_title(f'Elapsed Time varying on the scale factor (Thread={thread})')
         ax.set_xticks(x + width, categories)
-        ax.legend(loc='upper left', ncols=3)
-        ax.set_ylim(0, y_max*1.1)
+        ax.legend(loc='upper left', ncols=1)
+        ax.set_ylim(0, y_max*1.02)
 
         format = "pdf"
         out_path = get_plot_path(f"elapsed-query-time-thread{thread}", name, format)
         plt.savefig(out_path,
                 format=format, bbox_inches="tight")
 
+def plot_bar_thread_elapsed(groups: list[MeasurementGroup], name: str = "elapsed_plot_thread_bar"):
+    y_max = max(group.average_by("elapsed_time")*1000 for group in groups)
+    y_min = min(group.min_elapsed_time*1000 for group in groups) 
+
+    categories = get_queries(groups)
+    x = np.arange(len(categories))
+
+    for i, scale_factor in enumerate(get_scale_factors(groups)):
+
+        elapsed_groups = defaultdict(lambda: list())
+        threads = get_thread_counts(groups)
+
+        for query in categories:
+            for group in [g for g in groups if g.scale_factor == scale_factor]:
+                for i, thread in enumerate(threads):
+                    if group.query_name == query and group.thread_count == thread:
+                        elapsed_groups[thread].append(group.average_by("elapsed_time")*1000)
+    
+        fig, ax = plt.subplots(layout='constrained')
+
+        width = 0.25  # the width of the bars
+        multiplier = 0
+        for idx, (attribute, measurement) in enumerate(elapsed_groups.items()):
+            offset = width * multiplier
+            rects = ax.bar(x + offset, measurement, width, hatch=hatch_patterns[idx % len(threads)], label=f"{attribute} Thread(s)")
+            # ax.bar_label(rects, padding=3)
+            multiplier += 1
+
+        # Add some text for labels, title and custom x-axis tick labels, etc.
+        ax.set_ylabel('Query Elapsed Time(ms)')
+        ax.set_xlabel('Query')
+        ax.set_title('Elapsed Time varying on the number of threads (SF=100)')
+        ax.set_xticks(x + width, categories)
+        ax.legend(loc='upper left', ncols=1)
+        ax.set_ylim(0, y_max*1.02)
+
+        format = "pdf"
+        out_path = get_plot_path(f"elapsed-query-time-sf{scale_factor}", name, format)
+        plt.savefig(out_path,
+                format=format, bbox_inches="tight")
 
 
 if __name__ == "__main__":
@@ -182,9 +260,16 @@ if __name__ == "__main__":
         sorted(measurements, key=lambda x: x.get_name()), lambda x: x.get_name())]
     groups.sort(key=lambda x: x.key)
 
-    # t1_groups = [g for g in groups if g.scale_factor == 10] # Only use quries with scale factor 10 since that is the only one that is common
-    t2_groups = [g for g in groups if g.thread_count == 1] # Only use quries with 4 threads since that is the only one that is common
+    t1_groups = [g for g in groups if g.scale_factor == 100] # Only use quries with scale factor 10 since that is the only one that is common
+    t2_groups = [g for g in groups if g.thread_count == 4] # Only use quries with 4 threads since that is the only one that is common
 
     # General plot of elapsed times for all queries
     plot_elapsed(groups)
-    plot_scale_bar_elapsed(groups)
+    plot_thread_elapsed(groups)
+    # plot_scale_bar_elapsed(groups)
+
+    # Graphs for experiment 1
+    plot_bar_thread_elapsed(t1_groups) # Shows scaling based on increasing number of threads
+
+    # Graphs for experiment 2
+    plot_scale_bar_elapsed(t2_groups) # Shows scaling based on increasing scale factor
