@@ -4,3 +4,6 @@
 [submodule "exercise-02/duckdb"]
 	path = exercise-02/duckdb
 	url = https://github.com/Tietgen-ITU/duckdb.git
+[submodule "exercise-03/wayang"]
+	path = exercise-03/wayang
+	url = https://github.com/Tietgen-ITU/wayang.git
