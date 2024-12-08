@@ -7,6 +7,7 @@ from typing import Any
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 
+from matplotlib.ticker import LogLocator, ScalarFormatter
 import numpy as np
 
 CURRENT_WORKING_DIRECTORY = pathlib.Path(__file__).parent.resolve()
@@ -69,6 +70,9 @@ class MeasurementGroup:
         self.min_elapsed_time = min(m.elapsed_time for m in self.measurements)
         self.max_elapsed_time = max(m.elapsed_time for m in self.measurements)
 
+    def average_by_rows_scanned(self):
+        return sum([m.profile["cumulative_rows_scanned"] for m in self.measurements]) / len(self.measurements)
+
     def average_by(self, key: str):
         return sum([getattr(m, key) for m in self.measurements]) / len(self.measurements)
 
@@ -129,6 +133,67 @@ def plot_elapsed(groups: list[MeasurementGroup], name: str = "elapsed_line"):
         plt.savefig(out_path,
                 format=format, bbox_inches="tight")
 
+def plot_sf_elapsed(groups: list[MeasurementGroup], name: str = "elapsed_line"):
+    y_max = max(group.max_elapsed_time for group in groups)
+    y_min = min(group.min_elapsed_time for group in groups)
+
+    plt.figure()
+    ax = plt.gca()
+    plt.ylim(y_min*0.9, y_max*1.1)
+
+    for i, q in enumerate(get_queries(groups)):
+        gs = [group for group in groups if group.query_name == q]
+        gs.sort(key=lambda x: x.scale_factor)
+
+        xs = [group.scale_factor for group in gs]
+        ys = [group.average_by("elapsed_time") for group in gs]
+
+        marker = markers[i]
+        plt.loglog(xs, ys, f'-{marker}',
+                    markerfacecolor=None, label=f"Query {q}")
+
+    plt.title(f"Query elapsed time(Threads={4})")
+
+    plt.legend()
+    plt.ylabel("Query Elapsed Time (s)")
+    plt.xlabel("Scale Factor")
+
+    format = "pdf"
+    out_path = get_plot_path(f"elapsed-t{4}", name, format)
+    plt.savefig(out_path,
+            format=format, bbox_inches="tight")
+
+def plot_sf_rows(groups: list[MeasurementGroup], name: str = "elapsed_line"):
+    y_max = max(group.average_by_rows_scanned() for group in groups)
+    y_min = 20000000
+
+    plt.figure()
+    ax = plt.gca()
+    plt.ylim(y_min*0.9, y_max*1.1)
+
+    for i, q in enumerate(get_queries(groups)):
+        gs = [group for group in groups if group.query_name == q]
+        gs.sort(key=lambda x: x.scale_factor)
+
+        xs = [group.scale_factor for group in gs]
+        ys = [group.average_by_rows_scanned() for group in gs]
+        print(ys)
+
+        marker = markers[i]
+        plt.loglog(xs, ys, f'-{marker}',
+                    markerfacecolor=None, label=f"Query {q}")
+
+    plt.title(f"Query rows scanned(Threads={4})")
+
+    plt.legend()
+    plt.ylabel("Rows scanned")
+    plt.xlabel("Scale Factor")
+
+    format = "pdf"
+    out_path = get_plot_path(f"rows-threads-t{4}", name, format)
+    plt.savefig(out_path,
+            format=format, bbox_inches="tight")
+
 def plot_thread_elapsed(groups: list[MeasurementGroup], name: str = "elapsed_thread_line"):
     y_max = max(group.max_elapsed_time for group in groups)
     y_min = min(group.min_elapsed_time for group in groups)
@@ -163,6 +228,74 @@ def plot_thread_elapsed(groups: list[MeasurementGroup], name: str = "elapsed_thr
         out_path = get_plot_path(f"elapsed-t{t}", name, format)
         plt.savefig(out_path,
                 format=format, bbox_inches="tight")
+
+def plot_thread_scale_elapsed(groups: list[MeasurementGroup], name: str = "elapsed_thread_line"):
+    y_max = max(group.max_elapsed_time for group in groups)
+    y_min = min(group.min_elapsed_time for group in groups)
+
+    plt.figure()
+    ax = plt.gca()
+    plt.ylim(y_min*0.95, y_max*1.05)
+
+    for q_idx, query_name in enumerate(get_queries(groups)):
+        gs = [group for group in groups if group.query_name == query_name]
+        gs.sort(key=lambda x: x.scale_factor)
+
+        xs = [group.thread_count for group in gs]
+        ys = [group.average_by("elapsed_time") for group in gs]
+
+        marker = markers[q_idx]
+        line = line_styles[q_idx]
+        plt.loglog(xs, ys, 
+                marker=marker, 
+                linestyle=line,
+                markerfacecolor=None, 
+                label=f"Query {query_name}")
+
+        ax.xaxis.set_major_locator(LogLocator(base=10.0, numticks=1))
+        ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs='auto'))
+
+        plt.title(f"Query elapsed time(SF=100)")
+
+        plt.legend()
+        plt.ylabel("Query Elapsed Time (s)")
+        plt.xlabel("Threads")
+
+        format = "pdf"
+        out_path = get_plot_path(f"elapsed-threads-sf100", name, format)
+        plt.savefig(out_path,
+                format=format, bbox_inches="tight")
+
+def plot_thread_scale_rows(groups: list[MeasurementGroup], name: str = "elapsed_thread_line"):
+    y_max = max(group.average_by_rows_scanned() for group in groups)
+    y_min = 20000000
+
+    plt.figure()
+    ax = plt.gca()
+    plt.ylim(y_min*0.9, y_max*1.1)
+
+    for i, q in enumerate(get_queries(groups)):
+        gs = [group for group in groups if group.query_name == q]
+        gs.sort(key=lambda x: x.scale_factor)
+
+        xs = [group.thread_count for group in gs]
+        ys = [group.average_by_rows_scanned() for group in gs]
+        print(ys)
+
+        marker = markers[i]
+        plt.plot(xs, ys, f'-{marker}',
+                    markerfacecolor=None, label=f"Query {q}")
+
+    plt.title(f"Query rows scanned(SF={100})")
+
+    plt.legend()
+    plt.ylabel("Rows scanned")
+    plt.xlabel("Threads")
+
+    format = "pdf"
+    out_path = get_plot_path(f"rows-scalefacotr-100", name, format)
+    plt.savefig(out_path,
+            format=format, bbox_inches="tight")
 
 def plot_scale_bar_elapsed(groups: list[MeasurementGroup], name: str = "elapsed_bar"):
     y_max = max(group.average_by("elapsed_time")*1000 for group in groups if group.thread_count == 4)
@@ -260,8 +393,12 @@ if __name__ == "__main__":
         sorted(measurements, key=lambda x: x.get_name()), lambda x: x.get_name())]
     groups.sort(key=lambda x: x.key)
 
-    t1_groups = [g for g in groups if g.scale_factor == 100] # Only use quries with scale factor 10 since that is the only one that is common
-    t2_groups = [g for g in groups if g.thread_count == 4] # Only use quries with 4 threads since that is the only one that is common
+    queries = set([ "1.1", "2.2", "4.1" ])
+
+    t1_groups_all = [g for g in groups if g.scale_factor == 100] # Only use quries with scale factor 10 since that is the only one that is common
+    t2_groups_all = [g for g in groups if g.thread_count == 4] # Only use quries with 4 threads since that is the only one that is common
+    t1_groups = [g for g in groups if g.scale_factor == 100 and g.query_name in queries] # Only use quries with scale factor 10 since that is the only one that is common
+    t2_groups = [g for g in groups if g.thread_count == 4 and g.query_name in queries] # Only use quries with 4 threads since that is the only one that is common
 
     # General plot of elapsed times for all queries
     plot_elapsed(groups)
@@ -269,7 +406,11 @@ if __name__ == "__main__":
     # plot_scale_bar_elapsed(groups)
 
     # Graphs for experiment 1
-    plot_bar_thread_elapsed(t1_groups) # Shows scaling based on increasing number of threads
+    plot_bar_thread_elapsed(t1_groups_all) # Shows scaling based on increasing number of threads
+    plot_thread_scale_elapsed(t1_groups, "t1_elapsed_line") # Shows elapsed time for queries 1.1, 2.2 and 4.1
+    plot_thread_scale_rows(t1_groups, "t1-rows-scanned") # Shows rows scanned for queries 1.1, 2.2 and 4.1
 
     # Graphs for experiment 2
-    plot_scale_bar_elapsed(t2_groups) # Shows scaling based on increasing scale factor
+    plot_scale_bar_elapsed(t2_groups_all) # Shows scaling based on increasing scale factor
+    plot_sf_elapsed(t2_groups, "t2_elapsed_line") # Shows elapsed time for queries 1.1, 2.2 and 4.1
+    plot_sf_rows(t2_groups, "t2-rows-scanned") # Shows rows scanned for queries 1.1, 2.2 and 4.1
