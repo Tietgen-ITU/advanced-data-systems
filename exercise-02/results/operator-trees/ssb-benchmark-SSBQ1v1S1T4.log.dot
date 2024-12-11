@@ -1,0 +1,38 @@
+┌──────────────────────────────────────────┐
+│           UNGROUPED_AGGREGATE            │
+│ operator_timing: 9.700000000000001e-05   │
+│ operator_rows_scanned: 0.0               │
+│ operator_cardinality: 1.0                │
+└──────────────────────────────────────────┘
+
+└──┌───────────────────────────────────────────┐
+   │                 PROJECTION                │
+   │ operator_timing: 5.8800000000000006e-05   │
+   │ operator_rows_scanned: 0.0                │
+   │ operator_cardinality: 118864.0            │
+   └───────────────────────────────────────────┘
+
+   └──┌──────────────────────────────────────────┐
+      │                HASH_JOIN                 │
+      │ operator_timing: 0.0063718000000000385   │
+      │ operator_rows_scanned: 0.0               │
+      │ operator_cardinality: 118864.0           │
+      └──────────────────────────────────────────┘
+      ├──┌────────────────────────────────────────┐
+         │         TABLE_SCAN (lineorder)         │
+         │ operator_timing: 0.02929019999999973   │
+         │ operator_rows_scanned: 24010128.0      │
+         │ operator_cardinality: 118864.0         │
+         │ projection: True                       │
+         │ filter: True                           │
+         └────────────────────────────────────────┘
+
+      └──┌───────────────────────────────────────────┐
+         │             TABLE_SCAN (date)             │
+         │ operator_timing: 7.3999999999999995e-06   │
+         │ operator_rows_scanned: 2556.0             │
+         │ operator_cardinality: 365.0               │
+         │ projection: True                          │
+         │ filter: True                              │
+         └───────────────────────────────────────────┘
+

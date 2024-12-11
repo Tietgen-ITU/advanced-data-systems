@@ -1,0 +1,110 @@
+┌───────────────────────────────────────────┐
+│                 PROJECTION                │
+│ operator_timing: 3.6000000000000003e-06   │
+│ operator_rows_scanned: 0.0                │
+│ operator_cardinality: 56.0                │
+└───────────────────────────────────────────┘
+
+└──┌──────────────────────────────────────────┐
+   │                 ORDER_BY                 │
+   │ operator_timing: 0.0017755999999999998   │
+   │ operator_rows_scanned: 0.0               │
+   │ operator_cardinality: 56.0               │
+   └──────────────────────────────────────────┘
+
+   └──┌──────────────────────────────┐
+      │          PROJECTION          │
+      │ operator_timing: 2e-06       │
+      │ operator_rows_scanned: 0.0   │
+      │ operator_cardinality: 56.0   │
+      └──────────────────────────────┘
+
+      └──┌──────────────────────────────┐
+         │          PROJECTION          │
+         │ operator_timing: 6e-07       │
+         │ operator_rows_scanned: 0.0   │
+         │ operator_cardinality: 56.0   │
+         └──────────────────────────────┘
+
+         └──┌──────────────────────────────────────────┐
+            │                PROJECTION                │
+            │ operator_timing: 5.199999999999999e-06   │
+            │ operator_rows_scanned: 0.0               │
+            │ operator_cardinality: 56.0               │
+            └──────────────────────────────────────────┘
+
+            └──┌──────────────────────────────┐
+               │        HASH_GROUP_BY         │
+               │ operator_timing: 0.0028074   │
+               │ operator_rows_scanned: 0.0   │
+               │ operator_cardinality: 56.0   │
+               └──────────────────────────────┘
+
+               └──┌───────────────────────────────────────────┐
+                  │                 PROJECTION                │
+                  │ operator_timing: 2.5999999999999997e-06   │
+                  │ operator_rows_scanned: 0.0                │
+                  │ operator_cardinality: 9891.0              │
+                  └───────────────────────────────────────────┘
+
+                  └──┌───────────────────────────────────────────┐
+                     │                 PROJECTION                │
+                     │ operator_timing: 5.2400000000000007e-05   │
+                     │ operator_rows_scanned: 0.0                │
+                     │ operator_cardinality: 9891.0              │
+                     └───────────────────────────────────────────┘
+
+                     └──┌────────────────────────────────┐
+                        │           HASH_JOIN            │
+                        │ operator_timing: 0.0001178     │
+                        │ operator_rows_scanned: 0.0     │
+                        │ operator_cardinality: 9891.0   │
+                        └────────────────────────────────┘
+                        ├──┌──────────────────────────────────────────┐
+                           │                HASH_JOIN                 │
+                           │ operator_timing: 0.0075998000000000315   │
+                           │ operator_rows_scanned: 0.0               │
+                           │ operator_cardinality: 9891.0             │
+                           └──────────────────────────────────────────┘
+                           ├──┌───────────────────────────────────────┐
+                              │               HASH_JOIN               │
+                              │ operator_timing: 0.0183271999999999   │
+                              │ operator_rows_scanned: 0.0            │
+                              │ operator_cardinality: 1197413.0       │
+                              └───────────────────────────────────────┘
+                              ├──┌───────────────────────────────────────┐
+                                 │         TABLE_SCAN (lineorder)        │
+                                 │ operator_timing: 0.0345233999999998   │
+                                 │ operator_rows_scanned: 24010128.0     │
+                                 │ operator_cardinality: 5963965.0       │
+                                 │ projection: True                      │
+                                 │ filter: False                         │
+                                 └───────────────────────────────────────┘
+
+                              └──┌─────────────────────────────────┐
+                                 │      TABLE_SCAN (supplier)      │
+                                 │ operator_timing: 3.28e-05       │
+                                 │ operator_rows_scanned: 2000.0   │
+                                 │ operator_cardinality: 399.0     │
+                                 │ projection: True                │
+                                 │ filter: True                    │
+                                 └─────────────────────────────────┘
+
+                           └──┌──────────────────────────────────────────┐
+                              │            TABLE_SCAN (part)             │
+                              │ operator_timing: 0.0010880000000000009   │
+                              │ operator_rows_scanned: 400000.0          │
+                              │ operator_cardinality: 1635.0             │
+                              │ projection: True                         │
+                              │ filter: True                             │
+                              └──────────────────────────────────────────┘
+
+                        └──┌───────────────────────────────────────────┐
+                           │             TABLE_SCAN (date)             │
+                           │ operator_timing: 4.9999999999999996e-06   │
+                           │ operator_rows_scanned: 2556.0             │
+                           │ operator_cardinality: 2556.0              │
+                           │ projection: True                          │
+                           │ filter: False                             │
+                           └───────────────────────────────────────────┘
+
