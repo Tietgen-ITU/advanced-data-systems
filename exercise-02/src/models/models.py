@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from itertools import groupby
 import json
 from typing import Any
 
@@ -61,6 +62,13 @@ class MeasurementGroup:
 def read_data(file: str):
     measurements = Measurement.from_file(file)
     return measurements
+
+def group_measurements(measurements: list[Measurement]):
+    groups = [MeasurementGroup(key=k, measurements=list(g)) for k, g in groupby(
+        sorted(measurements, key=lambda x: x.get_name()), lambda x: x.get_name())]
+    groups.sort(key=lambda x: x.key)
+
+    return groups
 
 def get_queries(groups: list[MeasurementGroup]):
     return sorted(set(group.query_name for group in groups))
