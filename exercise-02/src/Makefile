@@ -1,7 +1,10 @@
-.PHONY: plot build-benchmarks benchmark benchmark-clean seperate-benchmarks table
+.PHONY: plot build-benchmarks benchmark benchmark-clean seperate-benchmarks table plot-operators
 
 plot:
 	python3 plot.py ../duckdb/ssb-benchmark.log
+
+plot-operators:
+	python3 plot-operators.py ../duckdb/ssb-benchmark.log
 
 table:
 	python3 gen-data-table.py ../duckdb/ssb-benchmark.log
