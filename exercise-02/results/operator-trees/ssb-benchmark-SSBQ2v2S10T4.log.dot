@@ -1,0 +1,117 @@
+┌──────────────────────────────┐
+│          PROJECTION          │
+│ operator_timing: 2.4e-06     │
+│ operator_rows_scanned: 0.0   │
+│ operator_cardinality: 56.0   │
+└──────────────────────────────┘
+
+└──┌──────────────────────────────┐
+   │           ORDER_BY           │
+   │ operator_timing: 0.0002568   │
+   │ operator_rows_scanned: 0.0   │
+   │ operator_cardinality: 56.0   │
+   └──────────────────────────────┘
+
+   └──┌──────────────────────────────┐
+      │          PROJECTION          │
+      │ operator_timing: 2e-06       │
+      │ operator_rows_scanned: 0.0   │
+      │ operator_cardinality: 56.0   │
+      └──────────────────────────────┘
+
+      └──┌──────────────────────────────┐
+         │          PROJECTION          │
+         │ operator_timing: 1.4e-06     │
+         │ operator_rows_scanned: 0.0   │
+         │ operator_cardinality: 56.0   │
+         └──────────────────────────────┘
+
+         └──┌───────────────────────────────────────────┐
+            │                 PROJECTION                │
+            │ operator_timing: 4.9999999999999996e-06   │
+            │ operator_rows_scanned: 0.0                │
+            │ operator_cardinality: 56.0                │
+            └───────────────────────────────────────────┘
+
+            └──┌──────────────────────────────┐
+               │        HASH_GROUP_BY         │
+               │ operator_timing: 0.0014286   │
+               │ operator_rows_scanned: 0.0   │
+               │ operator_cardinality: 56.0   │
+               └──────────────────────────────┘
+
+               └──┌─────────────────────────────────┐
+                  │            PROJECTION           │
+                  │ operator_timing: 1.14e-05       │
+                  │ operator_rows_scanned: 0.0      │
+                  │ operator_cardinality: 95448.0   │
+                  └─────────────────────────────────┘
+
+                  └──┌───────────────────────────────────────────┐
+                     │                 PROJECTION                │
+                     │ operator_timing: 0.00045719999999999995   │
+                     │ operator_rows_scanned: 0.0                │
+                     │ operator_cardinality: 95448.0             │
+                     └───────────────────────────────────────────┘
+
+                     └──┌───────────────────────────────────────────┐
+                        │                 HASH_JOIN                 │
+                        │ operator_timing: 0.00020899999999999998   │
+                        │ operator_rows_scanned: 0.0                │
+                        │ operator_cardinality: 95448.0             │
+                        └───────────────────────────────────────────┘
+                        ├──┌────────────────────────────────────────┐
+                           │               HASH_JOIN                │
+                           │ operator_timing: 0.07765999999999706   │
+                           │ operator_rows_scanned: 0.0             │
+                           │ operator_cardinality: 95448.0          │
+                           └────────────────────────────────────────┘
+                           ├──┌────────────────────────────────────────┐
+                              │               HASH_JOIN                │
+                              │ operator_timing: 0.18616859999999194   │
+                              │ operator_rows_scanned: 0.0             │
+                              │ operator_cardinality: 11916596.0       │
+                              └────────────────────────────────────────┘
+                              ├──┌───────────────────────────────────────┐
+                                 │         TABLE_SCAN (lineorder)        │
+                                 │ operator_timing: 0.3451481999999724   │
+                                 │ operator_rows_scanned: 239970400.0    │
+                                 │ operator_cardinality: 59932124.0      │
+                                 │ projection: True                      │
+                                 │ filter: False                         │
+                                 └───────────────────────────────────────┘
+
+                              └──┌──────────────────────────────────┐
+                                 │      TABLE_SCAN (supplier)       │
+                                 │ operator_timing: 8.2e-05         │
+                                 │ operator_rows_scanned: 20000.0   │
+                                 │ operator_cardinality: 3974.0     │
+                                 │ projection: True                 │
+                                 │ filter: True                     │
+                                 └──────────────────────────────────┘
+
+                           └──┌──────────────────────────────────────────┐
+                              │                  FILTER                  │
+                              │ operator_timing: 0.0002499999999999997   │
+                              │ operator_rows_scanned: 0.0               │
+                              │ operator_cardinality: 4769.0             │
+                              └──────────────────────────────────────────┘
+
+                              └──┌─────────────────────────────────────────┐
+                                 │            TABLE_SCAN (part)            │
+                                 │ operator_timing: 0.004313000000000004   │
+                                 │ operator_rows_scanned: 3200000.0        │
+                                 │ operator_cardinality: 6393.0            │
+                                 │ projection: True                        │
+                                 │ filter: True                            │
+                                 └─────────────────────────────────────────┘
+
+                        └──┌─────────────────────────────────┐
+                           │        TABLE_SCAN (date)        │
+                           │ operator_timing: 4.8e-06        │
+                           │ operator_rows_scanned: 2556.0   │
+                           │ operator_cardinality: 2556.0    │
+                           │ projection: True                │
+                           │ filter: False                   │
+                           └─────────────────────────────────┘
+

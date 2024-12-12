@@ -1,0 +1,697 @@
+[
+  {
+    "benchmark_name": "SSBQ1v1S1T4",
+    "scale_factor": "1",
+    "thread_count": "4",
+    "all_optimizers": 0.00011099999999999997,
+    "cumulative_optimizer_timing": 0.00010999999999999999,
+    "planner": 0.00008999999999999999,
+    "planner_binding": 0.000088,
+    "physical_planner": 0.000009,
+    "physical_planner_column_binding": 0.000001,
+    "physical_planner_resolve_types": 0.0,
+    "physical_planner_create_plan": 0.000007,
+    "optimizer_expression_rewriter": 0.000021,
+    "optimizer_filter_pullup": 0.000001,
+    "optimizer_filter_pushdown": 0.000023,
+    "optimizer_cte_filter_pusher": 0.0,
+    "optimizer_regex_range": 0.0,
+    "optimizer_in_clause": 0.0,
+    "optimizer_join_order": 0.000036,
+    "optimizer_deliminator": 0.0,
+    "optimizer_unnest_rewriter": 0.0,
+    "optimizer_unused_columns": 0.000003,
+    "optimizer_statistics_propagation": 0.000013,
+    "optimizer_limit_pushdown": 0.0,
+    "optimizer_top_n": 0.0,
+    "optimizer_compressed_materialization": 0.0,
+    "optimizer_duplicate_groups": 0.000001,
+    "optimizer_reorder_filter": 0.000002,
+    "optimizer_join_filter_pushdown": 0.000004,
+    "optimizer_extension": 0.0,
+    "optimizer_materialized_cte": 0.0,
+    "optimizer_build_side_probe_side": 0.000002,
+    "result_set_size": 16,
+    "optimizer_column_lifetime": 0.000002,
+    "operator_timing": 0.009454,
+    "optimizer_common_aggregate": 0.0,
+    "operator_rows_scanned": 0,
+    "optimizer_common_subexpressions": 0.000002,
+    "cumulative_rows_scanned": 24012684,
+    "operator_cardinality": 0,
+    "cumulative_cardinality": 356958,
+    "extra_info": {},
+    "cpu_time": 0.04407699999999977,
+    "blocked_thread_time": 0.0,
+    "query_name": "SELECT SUM(lo_extendedprice CITATION.cff CMakeLists.txt CODE_OF_CONDUCT.md CONTRIBUTING.md Doxyfile DuckDBConfig.cmake.in DuckDBConfigVersion.cmake.in LICENSE Makefile README.md benchmark build clean-profile.sh data duckdb_benchmark_data duckdb_benchmark_db.db duckdb_unittest_tempdir examples extension extension_config.cmake logo scripts sf_1_t1.out src ssb-benchmark-fixed.log ssb-benchmark.log ssb-elapsed.out ssb_sf1.duckdb ssb_sf10.duckdb ssb_sf100.duckdb test test-detailed-profile copy.log test-detailed-profile.log test-detailed-profile.out test-profile.out test.out test2-profile.json test2-profile.out third_party tools lo_discount) AS revenue FROM lineorder, date WHERE lo_orderdate = d_datekey AND d_year = 1994 AND lo_discount BETWEEN 1 AND 3 AND lo_quantity < 25;",
+    "children": [
+      {
+        "result_set_size": 16,
+        "operator_timing": 0.00009900000000000002,
+        "operator_rows_scanned": 0,
+        "cumulative_rows_scanned": 24012684,
+        "operator_cardinality": 1,
+        "cumulative_cardinality": 356958,
+        "extra_info": {
+          "Aggregates": "sum(#0)"
+        },
+        "operator_type": "UNGROUPED_AGGREGATE",
+        "cpu_time": 0.03462299999999977,
+        "children": [
+          {
+            "result_set_size": 475456,
+            "operator_timing": 0.00006300000000000001,
+            "operator_rows_scanned": 0,
+            "cumulative_rows_scanned": 24012684,
+            "operator_cardinality": 118864,
+            "cumulative_cardinality": 356957,
+            "extra_info": {
+              "Projections": "(lo_extendedprice CITATION.cff CMakeLists.txt CODE_OF_CONDUCT.md CONTRIBUTING.md Doxyfile DuckDBConfig.cmake.in DuckDBConfigVersion.cmake.in LICENSE Makefile README.md benchmark build clean-profile.sh data duckdb_benchmark_data duckdb_benchmark_db.db duckdb_unittest_tempdir examples extension extension_config.cmake logo scripts sf_1_t1.out src ssb-benchmark-fixed.log ssb-benchmark.log ssb-elapsed.out ssb_sf1.duckdb ssb_sf10.duckdb ssb_sf100.duckdb test test-detailed-profile copy.log test-detailed-profile.log test-detailed-profile.out test-profile.out test.out test2-profile.json test2-profile.out third_party tools CAST(lo_discount AS INTEGER))",
+              "Estimated Cardinality": "330514"
+            },
+            "operator_type": "PROJECTION",
+            "cpu_time": 0.03452399999999977,
+            "children": [
+              {
+                "result_set_size": 1545232,
+                "operator_timing": 0.005056000000000025,
+                "operator_rows_scanned": 0,
+                "cumulative_rows_scanned": 24012684,
+                "operator_cardinality": 118864,
+                "cumulative_cardinality": 238093,
+                "extra_info": {
+                  "Join Type": "INNER",
+                  "Conditions": "lo_orderdate = d_datekey",
+                  "Build Min": "1992-01-01",
+                  "Build Max": "1998-12-30",
+                  "Estimated Cardinality": "330514"
+                },
+                "operator_type": "HASH_JOIN",
+                "cpu_time": 0.03446099999999977,
+                "children": [
+                  {
+                    "result_set_size": 1069776,
+                    "operator_timing": 0.029396999999999743,
+                    "operator_rows_scanned": 24010128,
+                    "cumulative_rows_scanned": 24010128,
+                    "operator_cardinality": 118864,
+                    "cumulative_cardinality": 118864,
+                    "extra_info": {
+                      "Text": "lineorder",
+                      "Projections": [
+                        "lo_orderdate",
+                        "lo_discount",
+                        "lo_extendedprice"
+                      ],
+                      "Filters": [
+                        "lo_discount>=1 AND lo_discount<=3 AND lo_discount IS NOT NULL",
+                        "lo_quantity<25 AND lo_quantity IS NOT NULL"
+                      ],
+                      "Estimated Cardinality": "1200506"
+                    },
+                    "operator_type": "TABLE_SCAN",
+                    "cpu_time": 0.029396999999999743,
+                    "children": []
+                  },
+                  {
+                    "result_set_size": 1460,
+                    "operator_timing": 0.000008,
+                    "operator_rows_scanned": 2556,
+                    "cumulative_rows_scanned": 2556,
+                    "operator_cardinality": 365,
+                    "cumulative_cardinality": 365,
+                    "extra_info": {
+                      "Text": "date",
+                      "Projections": "d_datekey",
+                      "Filters": "d_year=1994 AND d_year IS NOT NULL",
+                      "Estimated Cardinality": "639"
+                    },
+                    "operator_type": "TABLE_SCAN",
+                    "cpu_time": 0.000008,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "benchmark_name": "SSBQ1v1S1T4",
+    "scale_factor": "1",
+    "thread_count": "4",
+    "all_optimizers": 0.00013599999999999997,
+    "cumulative_optimizer_timing": 0.00013499999999999997,
+    "planner": 0.000094,
+    "planner_binding": 0.000092,
+    "physical_planner": 0.000009999999999999999,
+    "physical_planner_column_binding": 0.000001,
+    "physical_planner_resolve_types": 0.0,
+    "physical_planner_create_plan": 0.000007,
+    "optimizer_expression_rewriter": 0.000027,
+    "optimizer_filter_pullup": 0.000001,
+    "optimizer_filter_pushdown": 0.000027,
+    "optimizer_cte_filter_pusher": 0.0,
+    "optimizer_regex_range": 0.000001,
+    "optimizer_in_clause": 0.000001,
+    "optimizer_join_order": 0.00004,
+    "optimizer_deliminator": 0.0,
+    "optimizer_unnest_rewriter": 0.000001,
+    "optimizer_unused_columns": 0.000004,
+    "optimizer_statistics_propagation": 0.000013,
+    "optimizer_limit_pushdown": 0.0,
+    "optimizer_top_n": 0.0,
+    "optimizer_compressed_materialization": 0.0,
+    "optimizer_duplicate_groups": 0.000001,
+    "optimizer_reorder_filter": 0.000002,
+    "optimizer_join_filter_pushdown": 0.000007,
+    "optimizer_extension": 0.0,
+    "optimizer_materialized_cte": 0.0,
+    "optimizer_build_side_probe_side": 0.000004,
+    "result_set_size": 16,
+    "optimizer_column_lifetime": 0.000003,
+    "operator_timing": 0.012394,
+    "optimizer_common_aggregate": 0.000001,
+    "operator_rows_scanned": 0,
+    "optimizer_common_subexpressions": 0.000002,
+    "cumulative_rows_scanned": 24012684,
+    "operator_cardinality": 0,
+    "cumulative_cardinality": 356958,
+    "extra_info": {},
+    "cpu_time": 0.04941899999999975,
+    "blocked_thread_time": 0.0,
+    "query_name": "SELECT SUM(lo_extendedprice CITATION.cff CMakeLists.txt CODE_OF_CONDUCT.md CONTRIBUTING.md Doxyfile DuckDBConfig.cmake.in DuckDBConfigVersion.cmake.in LICENSE Makefile README.md benchmark build clean-profile.sh data duckdb_benchmark_data duckdb_benchmark_db.db duckdb_unittest_tempdir examples extension extension_config.cmake logo scripts sf_1_t1.out src ssb-benchmark-fixed.log ssb-benchmark.log ssb-elapsed.out ssb_sf1.duckdb ssb_sf10.duckdb ssb_sf100.duckdb test test-detailed-profile copy.log test-detailed-profile.log test-detailed-profile.out test-profile.out test.out test2-profile.json test2-profile.out third_party tools lo_discount) AS revenue FROM lineorder, date WHERE lo_orderdate = d_datekey AND d_year = 1994 AND lo_discount BETWEEN 1 AND 3 AND lo_quantity < 25;",
+    "children": [
+      {
+        "result_set_size": 16,
+        "operator_timing": 0.00009400000000000002,
+        "operator_rows_scanned": 0,
+        "cumulative_rows_scanned": 24012684,
+        "operator_cardinality": 1,
+        "cumulative_cardinality": 356958,
+        "extra_info": {
+          "Aggregates": "sum(#0)"
+        },
+        "operator_type": "UNGROUPED_AGGREGATE",
+        "cpu_time": 0.037024999999999746,
+        "children": [
+          {
+            "result_set_size": 475456,
+            "operator_timing": 0.00005000000000000001,
+            "operator_rows_scanned": 0,
+            "cumulative_rows_scanned": 24012684,
+            "operator_cardinality": 118864,
+            "cumulative_cardinality": 356957,
+            "extra_info": {
+              "Projections": "(lo_extendedprice CITATION.cff CMakeLists.txt CODE_OF_CONDUCT.md CONTRIBUTING.md Doxyfile DuckDBConfig.cmake.in DuckDBConfigVersion.cmake.in LICENSE Makefile README.md benchmark build clean-profile.sh data duckdb_benchmark_data duckdb_benchmark_db.db duckdb_unittest_tempdir examples extension extension_config.cmake logo scripts sf_1_t1.out src ssb-benchmark-fixed.log ssb-benchmark.log ssb-elapsed.out ssb_sf1.duckdb ssb_sf10.duckdb ssb_sf100.duckdb test test-detailed-profile copy.log test-detailed-profile.log test-detailed-profile.out test-profile.out test.out test2-profile.json test2-profile.out third_party tools CAST(lo_discount AS INTEGER))",
+              "Estimated Cardinality": "330514"
+            },
+            "operator_type": "PROJECTION",
+            "cpu_time": 0.03693099999999975,
+            "children": [
+              {
+                "result_set_size": 1545232,
+                "operator_timing": 0.007950000000000035,
+                "operator_rows_scanned": 0,
+                "cumulative_rows_scanned": 24012684,
+                "operator_cardinality": 118864,
+                "cumulative_cardinality": 238093,
+                "extra_info": {
+                  "Join Type": "INNER",
+                  "Conditions": "lo_orderdate = d_datekey",
+                  "Build Min": "1992-01-01",
+                  "Build Max": "1998-12-30",
+                  "Estimated Cardinality": "330514"
+                },
+                "operator_type": "HASH_JOIN",
+                "cpu_time": 0.03688099999999975,
+                "children": [
+                  {
+                    "result_set_size": 1069776,
+                    "operator_timing": 0.02892299999999971,
+                    "operator_rows_scanned": 24010128,
+                    "cumulative_rows_scanned": 24010128,
+                    "operator_cardinality": 118864,
+                    "cumulative_cardinality": 118864,
+                    "extra_info": {
+                      "Text": "lineorder",
+                      "Projections": [
+                        "lo_orderdate",
+                        "lo_discount",
+                        "lo_extendedprice"
+                      ],
+                      "Filters": [
+                        "lo_discount>=1 AND lo_discount<=3 AND lo_discount IS NOT NULL",
+                        "lo_quantity<25 AND lo_quantity IS NOT NULL"
+                      ],
+                      "Estimated Cardinality": "1200506"
+                    },
+                    "operator_type": "TABLE_SCAN",
+                    "cpu_time": 0.02892299999999971,
+                    "children": []
+                  },
+                  {
+                    "result_set_size": 1460,
+                    "operator_timing": 0.000008,
+                    "operator_rows_scanned": 2556,
+                    "cumulative_rows_scanned": 2556,
+                    "operator_cardinality": 365,
+                    "cumulative_cardinality": 365,
+                    "extra_info": {
+                      "Text": "date",
+                      "Projections": "d_datekey",
+                      "Filters": "d_year=1994 AND d_year IS NOT NULL",
+                      "Estimated Cardinality": "639"
+                    },
+                    "operator_type": "TABLE_SCAN",
+                    "cpu_time": 0.000008,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "benchmark_name": "SSBQ1v1S1T4",
+    "scale_factor": "1",
+    "thread_count": "4",
+    "all_optimizers": 0.00012099999999999997,
+    "cumulative_optimizer_timing": 0.000121,
+    "planner": 0.000092,
+    "planner_binding": 0.00009,
+    "physical_planner": 0.000011999999999999999,
+    "physical_planner_column_binding": 0.000002,
+    "physical_planner_resolve_types": 0.0,
+    "physical_planner_create_plan": 0.000008,
+    "optimizer_expression_rewriter": 0.000023,
+    "optimizer_filter_pullup": 0.000001,
+    "optimizer_filter_pushdown": 0.00003,
+    "optimizer_cte_filter_pusher": 0.0,
+    "optimizer_regex_range": 0.0,
+    "optimizer_in_clause": 0.0,
+    "optimizer_join_order": 0.000031,
+    "optimizer_deliminator": 0.000001,
+    "optimizer_unnest_rewriter": 0.0,
+    "optimizer_unused_columns": 0.000005,
+    "optimizer_statistics_propagation": 0.000012,
+    "optimizer_limit_pushdown": 0.0,
+    "optimizer_top_n": 0.000001,
+    "optimizer_compressed_materialization": 0.0,
+    "optimizer_duplicate_groups": 0.000001,
+    "optimizer_reorder_filter": 0.000002,
+    "optimizer_join_filter_pushdown": 0.000005,
+    "optimizer_extension": 0.0,
+    "optimizer_materialized_cte": 0.0,
+    "optimizer_build_side_probe_side": 0.000003,
+    "result_set_size": 16,
+    "optimizer_column_lifetime": 0.000003,
+    "operator_timing": 0.011569,
+    "optimizer_common_aggregate": 0.000001,
+    "operator_rows_scanned": 0,
+    "optimizer_common_subexpressions": 0.000002,
+    "cumulative_rows_scanned": 24012684,
+    "operator_cardinality": 0,
+    "cumulative_cardinality": 356958,
+    "extra_info": {},
+    "cpu_time": 0.04973899999999967,
+    "blocked_thread_time": 0.0,
+    "query_name": "SELECT SUM(lo_extendedprice CITATION.cff CMakeLists.txt CODE_OF_CONDUCT.md CONTRIBUTING.md Doxyfile DuckDBConfig.cmake.in DuckDBConfigVersion.cmake.in LICENSE Makefile README.md benchmark build clean-profile.sh data duckdb_benchmark_data duckdb_benchmark_db.db duckdb_unittest_tempdir examples extension extension_config.cmake logo scripts sf_1_t1.out src ssb-benchmark-fixed.log ssb-benchmark.log ssb-elapsed.out ssb_sf1.duckdb ssb_sf10.duckdb ssb_sf100.duckdb test test-detailed-profile copy.log test-detailed-profile.log test-detailed-profile.out test-profile.out test.out test2-profile.json test2-profile.out third_party tools lo_discount) AS revenue FROM lineorder, date WHERE lo_orderdate = d_datekey AND d_year = 1994 AND lo_discount BETWEEN 1 AND 3 AND lo_quantity < 25;",
+    "children": [
+      {
+        "result_set_size": 16,
+        "operator_timing": 0.00010100000000000002,
+        "operator_rows_scanned": 0,
+        "cumulative_rows_scanned": 24012684,
+        "operator_cardinality": 1,
+        "cumulative_cardinality": 356958,
+        "extra_info": {
+          "Aggregates": "sum(#0)"
+        },
+        "operator_type": "UNGROUPED_AGGREGATE",
+        "cpu_time": 0.038169999999999676,
+        "children": [
+          {
+            "result_set_size": 475456,
+            "operator_timing": 0.00007300000000000001,
+            "operator_rows_scanned": 0,
+            "cumulative_rows_scanned": 24012684,
+            "operator_cardinality": 118864,
+            "cumulative_cardinality": 356957,
+            "extra_info": {
+              "Projections": "(lo_extendedprice CITATION.cff CMakeLists.txt CODE_OF_CONDUCT.md CONTRIBUTING.md Doxyfile DuckDBConfig.cmake.in DuckDBConfigVersion.cmake.in LICENSE Makefile README.md benchmark build clean-profile.sh data duckdb_benchmark_data duckdb_benchmark_db.db duckdb_unittest_tempdir examples extension extension_config.cmake logo scripts sf_1_t1.out src ssb-benchmark-fixed.log ssb-benchmark.log ssb-elapsed.out ssb_sf1.duckdb ssb_sf10.duckdb ssb_sf100.duckdb test test-detailed-profile copy.log test-detailed-profile.log test-detailed-profile.out test-profile.out test.out test2-profile.json test2-profile.out third_party tools CAST(lo_discount AS INTEGER))",
+              "Estimated Cardinality": "330514"
+            },
+            "operator_type": "PROJECTION",
+            "cpu_time": 0.03806899999999968,
+            "children": [
+              {
+                "result_set_size": 1545232,
+                "operator_timing": 0.007026000000000041,
+                "operator_rows_scanned": 0,
+                "cumulative_rows_scanned": 24012684,
+                "operator_cardinality": 118864,
+                "cumulative_cardinality": 238093,
+                "extra_info": {
+                  "Join Type": "INNER",
+                  "Conditions": "lo_orderdate = d_datekey",
+                  "Build Min": "1992-01-01",
+                  "Build Max": "1998-12-30",
+                  "Estimated Cardinality": "330514"
+                },
+                "operator_type": "HASH_JOIN",
+                "cpu_time": 0.03799599999999968,
+                "children": [
+                  {
+                    "result_set_size": 1069776,
+                    "operator_timing": 0.03096199999999964,
+                    "operator_rows_scanned": 24010128,
+                    "cumulative_rows_scanned": 24010128,
+                    "operator_cardinality": 118864,
+                    "cumulative_cardinality": 118864,
+                    "extra_info": {
+                      "Text": "lineorder",
+                      "Projections": [
+                        "lo_orderdate",
+                        "lo_discount",
+                        "lo_extendedprice"
+                      ],
+                      "Filters": [
+                        "lo_discount>=1 AND lo_discount<=3 AND lo_discount IS NOT NULL",
+                        "lo_quantity<25 AND lo_quantity IS NOT NULL"
+                      ],
+                      "Estimated Cardinality": "1200506"
+                    },
+                    "operator_type": "TABLE_SCAN",
+                    "cpu_time": 0.03096199999999964,
+                    "children": []
+                  },
+                  {
+                    "result_set_size": 1460,
+                    "operator_timing": 0.000008,
+                    "operator_rows_scanned": 2556,
+                    "cumulative_rows_scanned": 2556,
+                    "operator_cardinality": 365,
+                    "cumulative_cardinality": 365,
+                    "extra_info": {
+                      "Text": "date",
+                      "Projections": "d_datekey",
+                      "Filters": "d_year=1994 AND d_year IS NOT NULL",
+                      "Estimated Cardinality": "639"
+                    },
+                    "operator_type": "TABLE_SCAN",
+                    "cpu_time": 0.000008,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "benchmark_name": "SSBQ1v1S1T4",
+    "scale_factor": "1",
+    "thread_count": "4",
+    "all_optimizers": 0.00011299999999999997,
+    "cumulative_optimizer_timing": 0.00011299999999999998,
+    "planner": 0.000093,
+    "planner_binding": 0.000091,
+    "physical_planner": 0.000011,
+    "physical_planner_column_binding": 0.000001,
+    "physical_planner_resolve_types": 0.000001,
+    "physical_planner_create_plan": 0.000007,
+    "optimizer_expression_rewriter": 0.000023,
+    "optimizer_filter_pullup": 0.000001,
+    "optimizer_filter_pushdown": 0.000024,
+    "optimizer_cte_filter_pusher": 0.000001,
+    "optimizer_regex_range": 0.0,
+    "optimizer_in_clause": 0.000001,
+    "optimizer_join_order": 0.000031,
+    "optimizer_deliminator": 0.0,
+    "optimizer_unnest_rewriter": 0.0,
+    "optimizer_unused_columns": 0.000004,
+    "optimizer_statistics_propagation": 0.000012,
+    "optimizer_limit_pushdown": 0.0,
+    "optimizer_top_n": 0.000001,
+    "optimizer_compressed_materialization": 0.0,
+    "optimizer_duplicate_groups": 0.000001,
+    "optimizer_reorder_filter": 0.000002,
+    "optimizer_join_filter_pushdown": 0.000005,
+    "optimizer_extension": 0.0,
+    "optimizer_materialized_cte": 0.0,
+    "optimizer_build_side_probe_side": 0.000003,
+    "result_set_size": 16,
+    "optimizer_column_lifetime": 0.000002,
+    "operator_timing": 0.010219,
+    "optimizer_common_aggregate": 0.0,
+    "operator_rows_scanned": 0,
+    "optimizer_common_subexpressions": 0.000002,
+    "cumulative_rows_scanned": 24012684,
+    "operator_cardinality": 0,
+    "cumulative_cardinality": 356958,
+    "extra_info": {},
+    "cpu_time": 0.04440899999999986,
+    "blocked_thread_time": 0.0,
+    "query_name": "SELECT SUM(lo_extendedprice CITATION.cff CMakeLists.txt CODE_OF_CONDUCT.md CONTRIBUTING.md Doxyfile DuckDBConfig.cmake.in DuckDBConfigVersion.cmake.in LICENSE Makefile README.md benchmark build clean-profile.sh data duckdb_benchmark_data duckdb_benchmark_db.db duckdb_unittest_tempdir examples extension extension_config.cmake logo scripts sf_1_t1.out src ssb-benchmark-fixed.log ssb-benchmark.log ssb-elapsed.out ssb_sf1.duckdb ssb_sf10.duckdb ssb_sf100.duckdb test test-detailed-profile copy.log test-detailed-profile.log test-detailed-profile.out test-profile.out test.out test2-profile.json test2-profile.out third_party tools lo_discount) AS revenue FROM lineorder, date WHERE lo_orderdate = d_datekey AND d_year = 1994 AND lo_discount BETWEEN 1 AND 3 AND lo_quantity < 25;",
+    "children": [
+      {
+        "result_set_size": 16,
+        "operator_timing": 0.00009300000000000001,
+        "operator_rows_scanned": 0,
+        "cumulative_rows_scanned": 24012684,
+        "operator_cardinality": 1,
+        "cumulative_cardinality": 356958,
+        "extra_info": {
+          "Aggregates": "sum(#0)"
+        },
+        "operator_type": "UNGROUPED_AGGREGATE",
+        "cpu_time": 0.03418999999999986,
+        "children": [
+          {
+            "result_set_size": 475456,
+            "operator_timing": 0.00005700000000000001,
+            "operator_rows_scanned": 0,
+            "cumulative_rows_scanned": 24012684,
+            "operator_cardinality": 118864,
+            "cumulative_cardinality": 356957,
+            "extra_info": {
+              "Projections": "(lo_extendedprice CITATION.cff CMakeLists.txt CODE_OF_CONDUCT.md CONTRIBUTING.md Doxyfile DuckDBConfig.cmake.in DuckDBConfigVersion.cmake.in LICENSE Makefile README.md benchmark build clean-profile.sh data duckdb_benchmark_data duckdb_benchmark_db.db duckdb_unittest_tempdir examples extension extension_config.cmake logo scripts sf_1_t1.out src ssb-benchmark-fixed.log ssb-benchmark.log ssb-elapsed.out ssb_sf1.duckdb ssb_sf10.duckdb ssb_sf100.duckdb test test-detailed-profile copy.log test-detailed-profile.log test-detailed-profile.out test-profile.out test.out test2-profile.json test2-profile.out third_party tools CAST(lo_discount AS INTEGER))",
+              "Estimated Cardinality": "330514"
+            },
+            "operator_type": "PROJECTION",
+            "cpu_time": 0.03409699999999986,
+            "children": [
+              {
+                "result_set_size": 1545232,
+                "operator_timing": 0.005607000000000046,
+                "operator_rows_scanned": 0,
+                "cumulative_rows_scanned": 24012684,
+                "operator_cardinality": 118864,
+                "cumulative_cardinality": 238093,
+                "extra_info": {
+                  "Join Type": "INNER",
+                  "Conditions": "lo_orderdate = d_datekey",
+                  "Build Min": "1992-01-01",
+                  "Build Max": "1998-12-30",
+                  "Estimated Cardinality": "330514"
+                },
+                "operator_type": "HASH_JOIN",
+                "cpu_time": 0.034039999999999855,
+                "children": [
+                  {
+                    "result_set_size": 1069776,
+                    "operator_timing": 0.02842699999999981,
+                    "operator_rows_scanned": 24010128,
+                    "cumulative_rows_scanned": 24010128,
+                    "operator_cardinality": 118864,
+                    "cumulative_cardinality": 118864,
+                    "extra_info": {
+                      "Text": "lineorder",
+                      "Projections": [
+                        "lo_orderdate",
+                        "lo_discount",
+                        "lo_extendedprice"
+                      ],
+                      "Filters": [
+                        "lo_discount>=1 AND lo_discount<=3 AND lo_discount IS NOT NULL",
+                        "lo_quantity<25 AND lo_quantity IS NOT NULL"
+                      ],
+                      "Estimated Cardinality": "1200506"
+                    },
+                    "operator_type": "TABLE_SCAN",
+                    "cpu_time": 0.02842699999999981,
+                    "children": []
+                  },
+                  {
+                    "result_set_size": 1460,
+                    "operator_timing": 0.000006,
+                    "operator_rows_scanned": 2556,
+                    "cumulative_rows_scanned": 2556,
+                    "operator_cardinality": 365,
+                    "cumulative_cardinality": 365,
+                    "extra_info": {
+                      "Text": "date",
+                      "Projections": "d_datekey",
+                      "Filters": "d_year=1994 AND d_year IS NOT NULL",
+                      "Estimated Cardinality": "639"
+                    },
+                    "operator_type": "TABLE_SCAN",
+                    "cpu_time": 0.000006,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "benchmark_name": "SSBQ1v1S1T4",
+    "scale_factor": "1",
+    "thread_count": "4",
+    "all_optimizers": 0.00010299999999999997,
+    "cumulative_optimizer_timing": 0.00010199999999999999,
+    "planner": 0.000079,
+    "planner_binding": 0.000078,
+    "physical_planner": 0.000009999999999999999,
+    "physical_planner_column_binding": 0.000002,
+    "physical_planner_resolve_types": 0.0,
+    "physical_planner_create_plan": 0.000006,
+    "optimizer_expression_rewriter": 0.000021,
+    "optimizer_filter_pullup": 0.000001,
+    "optimizer_filter_pushdown": 0.000023,
+    "optimizer_cte_filter_pusher": 0.0,
+    "optimizer_regex_range": 0.0,
+    "optimizer_in_clause": 0.000001,
+    "optimizer_join_order": 0.000027,
+    "optimizer_deliminator": 0.0,
+    "optimizer_unnest_rewriter": 0.000001,
+    "optimizer_unused_columns": 0.000003,
+    "optimizer_statistics_propagation": 0.000012,
+    "optimizer_limit_pushdown": 0.0,
+    "optimizer_top_n": 0.0,
+    "optimizer_compressed_materialization": 0.0,
+    "optimizer_duplicate_groups": 0.000001,
+    "optimizer_reorder_filter": 0.000002,
+    "optimizer_join_filter_pushdown": 0.000003,
+    "optimizer_extension": 0.0,
+    "optimizer_materialized_cte": 0.0,
+    "optimizer_build_side_probe_side": 0.000003,
+    "result_set_size": 16,
+    "optimizer_column_lifetime": 0.000002,
+    "operator_timing": 0.011019,
+    "optimizer_common_aggregate": 0.0,
+    "operator_rows_scanned": 0,
+    "optimizer_common_subexpressions": 0.000002,
+    "cumulative_rows_scanned": 24012684,
+    "operator_cardinality": 0,
+    "cumulative_cardinality": 356958,
+    "extra_info": {},
+    "cpu_time": 0.04613699999999981,
+    "blocked_thread_time": 0.0,
+    "query_name": "SELECT SUM(lo_extendedprice CITATION.cff CMakeLists.txt CODE_OF_CONDUCT.md CONTRIBUTING.md Doxyfile DuckDBConfig.cmake.in DuckDBConfigVersion.cmake.in LICENSE Makefile README.md benchmark build clean-profile.sh data duckdb_benchmark_data duckdb_benchmark_db.db duckdb_unittest_tempdir examples extension extension_config.cmake logo scripts sf_1_t1.out src ssb-benchmark-fixed.log ssb-benchmark.log ssb-elapsed.out ssb_sf1.duckdb ssb_sf10.duckdb ssb_sf100.duckdb test test-detailed-profile copy.log test-detailed-profile.log test-detailed-profile.out test-profile.out test.out test2-profile.json test2-profile.out third_party tools lo_discount) AS revenue FROM lineorder, date WHERE lo_orderdate = d_datekey AND d_year = 1994 AND lo_discount BETWEEN 1 AND 3 AND lo_quantity < 25;",
+    "children": [
+      {
+        "result_set_size": 16,
+        "operator_timing": 0.00009800000000000002,
+        "operator_rows_scanned": 0,
+        "cumulative_rows_scanned": 24012684,
+        "operator_cardinality": 1,
+        "cumulative_cardinality": 356958,
+        "extra_info": {
+          "Aggregates": "sum(#0)"
+        },
+        "operator_type": "UNGROUPED_AGGREGATE",
+        "cpu_time": 0.03511799999999981,
+        "children": [
+          {
+            "result_set_size": 475456,
+            "operator_timing": 0.000051000000000000006,
+            "operator_rows_scanned": 0,
+            "cumulative_rows_scanned": 24012684,
+            "operator_cardinality": 118864,
+            "cumulative_cardinality": 356957,
+            "extra_info": {
+              "Projections": "(lo_extendedprice CITATION.cff CMakeLists.txt CODE_OF_CONDUCT.md CONTRIBUTING.md Doxyfile DuckDBConfig.cmake.in DuckDBConfigVersion.cmake.in LICENSE Makefile README.md benchmark build clean-profile.sh data duckdb_benchmark_data duckdb_benchmark_db.db duckdb_unittest_tempdir examples extension extension_config.cmake logo scripts sf_1_t1.out src ssb-benchmark-fixed.log ssb-benchmark.log ssb-elapsed.out ssb_sf1.duckdb ssb_sf10.duckdb ssb_sf100.duckdb test test-detailed-profile copy.log test-detailed-profile.log test-detailed-profile.out test-profile.out test.out test2-profile.json test2-profile.out third_party tools CAST(lo_discount AS INTEGER))",
+              "Estimated Cardinality": "330514"
+            },
+            "operator_type": "PROJECTION",
+            "cpu_time": 0.03501999999999981,
+            "children": [
+              {
+                "result_set_size": 1545232,
+                "operator_timing": 0.006220000000000047,
+                "operator_rows_scanned": 0,
+                "cumulative_rows_scanned": 24012684,
+                "operator_cardinality": 118864,
+                "cumulative_cardinality": 238093,
+                "extra_info": {
+                  "Join Type": "INNER",
+                  "Conditions": "lo_orderdate = d_datekey",
+                  "Build Min": "1992-01-01",
+                  "Build Max": "1998-12-30",
+                  "Estimated Cardinality": "330514"
+                },
+                "operator_type": "HASH_JOIN",
+                "cpu_time": 0.034968999999999806,
+                "children": [
+                  {
+                    "result_set_size": 1069776,
+                    "operator_timing": 0.028741999999999757,
+                    "operator_rows_scanned": 24010128,
+                    "cumulative_rows_scanned": 24010128,
+                    "operator_cardinality": 118864,
+                    "cumulative_cardinality": 118864,
+                    "extra_info": {
+                      "Text": "lineorder",
+                      "Projections": [
+                        "lo_orderdate",
+                        "lo_discount",
+                        "lo_extendedprice"
+                      ],
+                      "Filters": [
+                        "lo_discount>=1 AND lo_discount<=3 AND lo_discount IS NOT NULL",
+                        "lo_quantity<25 AND lo_quantity IS NOT NULL"
+                      ],
+                      "Estimated Cardinality": "1200506"
+                    },
+                    "operator_type": "TABLE_SCAN",
+                    "cpu_time": 0.028741999999999757,
+                    "children": []
+                  },
+                  {
+                    "result_set_size": 1460,
+                    "operator_timing": 0.000007,
+                    "operator_rows_scanned": 2556,
+                    "cumulative_rows_scanned": 2556,
+                    "operator_cardinality": 365,
+                    "cumulative_cardinality": 365,
+                    "extra_info": {
+                      "Text": "date",
+                      "Projections": "d_datekey",
+                      "Filters": "d_year=1994 AND d_year IS NOT NULL",
+                      "Estimated Cardinality": "639"
+                    },
+                    "operator_type": "TABLE_SCAN",
+                    "cpu_time": 0.000007,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

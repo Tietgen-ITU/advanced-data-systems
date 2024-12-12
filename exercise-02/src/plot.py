@@ -6,6 +6,7 @@ import sys
 from typing import Any
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
+from models.models import MeasurementGroup, get_queries, get_thread_counts, get_scale_factors, read_data
 
 from matplotlib.ticker import LogLocator, ScalarFormatter
 import numpy as np
@@ -16,80 +17,6 @@ markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'H', '+', 'x']
 line_styles = ['-', '--', '-.', ':', '-', '--', '-.', ':', '-', '--', '-.', ':', '-']
 hatch_patterns = ['///', '\\\\', '...', '/', '\\', '-', 'O' ]
 
-@dataclass
-class Measurement:
-    query_name: str
-    thread_count: str
-    scale_factor: str
-    elapsed_time: float
-    profile: Any
-
-    @staticmethod
-    def from_file(file: str):
-        profilings = []
-        with open(file) as f:
-            buffer = []
-
-            for line in f:
-                buffer.append(line)
-
-                if line.rstrip() == "}":
-                    profile = json.loads(''.join(buffer))
-                    profilings.append(profile)
-                    buffer.clear()
-
-        measurements = []
-        for profile in profilings:
-            q_str = profile["benchmark_name"]
-            measurements.append(Measurement(
-                query_name=q_str.replace("Q", "").replace("v", ".")[3:6],
-                scale_factor=profile["scale_factor"],
-                thread_count=profile["thread_count"],
-                elapsed_time=profile["operator_timing"],
-                profile=profile
-            ))
-
-        return measurements
-
-    def get_name(self):
-        return self.profile["benchmark_name"]
-
-@dataclass
-class MeasurementGroup:
-    key: str
-    measurements: list[Measurement]
-    query_name: str = ""
-    thread_count: int = -1
-    scale_factor: int = -1
-
-    def __post_init__(self):
-        self.query_name = self.measurements[0].query_name
-        self.thread_count = int(self.measurements[0].thread_count)
-        self.scale_factor = int(self.measurements[0].scale_factor)
-
-        self.min_elapsed_time = min(m.elapsed_time for m in self.measurements)
-        self.max_elapsed_time = max(m.elapsed_time for m in self.measurements)
-
-    def average_by_rows_scanned(self):
-        return sum([m.profile["cumulative_rows_scanned"] for m in self.measurements]) / len(self.measurements)
-
-    def average_by(self, key: str):
-        return sum([getattr(m, key) for m in self.measurements]) / len(self.measurements)
-
-def read_data(file: str):
-    measurements = Measurement.from_file(file)
-    return measurements
-
-def get_queries(groups: list[MeasurementGroup]):
-    return sorted(set(group.query_name for group in groups))
-
-
-def get_thread_counts(groups: list[MeasurementGroup]):
-    return sorted(set(group.thread_count for group in groups))
-
-
-def get_scale_factors(groups: list[MeasurementGroup]):
-    return sorted(set(group.scale_factor for group in groups))
 
 def get_plot_path(plot_name: str, group_name: str, format: str):
     if not (CURRENT_WORKING_DIRECTORY / "output").exists():
@@ -234,7 +161,6 @@ def plot_thread_scale_elapsed(groups: list[MeasurementGroup], name: str = "elaps
     y_min = min(group.min_elapsed_time for group in groups)
 
     plt.figure()
-    ax = plt.gca()
     plt.ylim(y_min*0.95, y_max*1.05)
 
     for q_idx, query_name in enumerate(get_queries(groups)):
@@ -251,9 +177,6 @@ def plot_thread_scale_elapsed(groups: list[MeasurementGroup], name: str = "elaps
                 linestyle=line,
                 markerfacecolor=None, 
                 label=f"Query {query_name}")
-
-        ax.xaxis.set_major_locator(LogLocator(base=10.0, numticks=1))
-        ax.xaxis.set_minor_locator(LogLocator(base=10.0, subs='auto'))
 
         plt.title(f"Query elapsed time(SF=100)")
 
@@ -293,7 +216,7 @@ def plot_thread_scale_rows(groups: list[MeasurementGroup], name: str = "elapsed_
     plt.xlabel("Threads")
 
     format = "pdf"
-    out_path = get_plot_path(f"rows-scalefacotr-100", name, format)
+    out_path = get_plot_path(f"rows-scalefacor-100", name, format)
     plt.savefig(out_path,
             format=format, bbox_inches="tight")
 
@@ -381,6 +304,50 @@ def plot_bar_thread_elapsed(groups: list[MeasurementGroup], name: str = "elapsed
         plt.savefig(out_path,
                 format=format, bbox_inches="tight")
 
+def  barplot_threads_rowscanned(groups: list[MeasurementGroup], name: str = "elapsed_bar"):
+    normalize=1_000_000_000
+
+    y_max = max(group.average_by_rows_scanned()/normalize for group in groups if group.thread_count == 4)
+
+    categories = get_queries(groups)
+    x = np.arange(len(categories))
+
+    for i, thread in enumerate(get_thread_counts(groups)):
+        if thread != 4:
+            continue
+
+        elapsed_groups = defaultdict(lambda: list())
+        scale_factors = get_scale_factors(groups)
+
+        for query in categories:
+            for group in [g for g in groups if g.thread_count == thread]:
+                for i, sf in enumerate(scale_factors):
+                    if group.query_name == query and group.scale_factor == sf:
+                        elapsed_groups[sf].append(group.average_by_rows_scanned()/normalize)
+    
+        fig, ax = plt.subplots(layout='constrained')
+
+        width = 0.25  # the width of the bars
+        multiplier = 0
+        for idx, (attribute, measurement) in enumerate(reversed(elapsed_groups.items())):
+            offset = width * multiplier
+            ax.bar(x + offset, measurement, width, hatch=hatch_patterns[idx % len(scale_factors)], label=attribute)
+            # ax.bar_label(rects, padding=3)
+            multiplier += 1
+
+        # Add some text for labels, title and custom x-axis tick labels, etc.
+        ax.set_ylabel('Rows Scanned(Billion)')
+        ax.set_xlabel('Query')
+        ax.set_title(f'Accumulative Rows scanned (Thread={thread})')
+        ax.set_xticks(x + width, categories)
+        ax.legend(loc='upper left', ncols=1)
+        ax.set_ylim(0, y_max*1.02)
+
+        format = "pdf"
+        out_path = get_plot_path(f"rows-scanned-bar-t{thread}", name, format)
+        plt.savefig(out_path,
+                format=format, bbox_inches="tight")
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -395,9 +362,9 @@ if __name__ == "__main__":
 
     queries = set([ "1.1", "2.2", "4.1" ])
 
-    t1_groups_all = [g for g in groups if g.scale_factor == 100] # Only use quries with scale factor 10 since that is the only one that is common
+    t1_groups_all = [g for g in groups if g.scale_factor == 100] # Only use quries with scale factor 100 since that is the only one that is common
     t2_groups_all = [g for g in groups if g.thread_count == 4] # Only use quries with 4 threads since that is the only one that is common
-    t1_groups = [g for g in groups if g.scale_factor == 100 and g.query_name in queries] # Only use quries with scale factor 10 since that is the only one that is common
+    t1_groups = [g for g in groups if g.scale_factor == 100 and g.query_name in queries] # Only use quries with scale factor 100 since that is the only one that is common
     t2_groups = [g for g in groups if g.thread_count == 4 and g.query_name in queries] # Only use quries with 4 threads since that is the only one that is common
 
     # General plot of elapsed times for all queries
@@ -414,3 +381,4 @@ if __name__ == "__main__":
     plot_scale_bar_elapsed(t2_groups_all) # Shows scaling based on increasing scale factor
     plot_sf_elapsed(t2_groups, "t2_elapsed_line") # Shows elapsed time for queries 1.1, 2.2 and 4.1
     plot_sf_rows(t2_groups, "t2-rows-scanned") # Shows rows scanned for queries 1.1, 2.2 and 4.1
+    barplot_threads_rowscanned(t2_groups, "t2-rows-scanned") # Shows scaling based on increasing number of threads
