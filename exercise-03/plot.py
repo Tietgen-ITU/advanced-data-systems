@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import os
+import pathlib
 import sys
 from typing import List
 import json
@@ -81,6 +82,18 @@ class Dataset:
             file_type=file_extension,
             measurements=[ Measurement.from_json(measurement) for measurement in json["measurements"] ]
         )
+CURRENT_WORKING_DIRECTORY = pathlib.Path(__file__).parent.resolve()
+
+def get_plot_path(plot_name: str, group_name: str, format: str):
+    if not (CURRENT_WORKING_DIRECTORY / "output").exists():
+        (CURRENT_WORKING_DIRECTORY / "output").mkdir()
+    if not (CURRENT_WORKING_DIRECTORY / "output" / format).exists():
+        (CURRENT_WORKING_DIRECTORY / "output" / format).mkdir()
+    if not (CURRENT_WORKING_DIRECTORY / "output" / format / group_name).exists():
+        (CURRENT_WORKING_DIRECTORY / "output" / format / group_name).mkdir()
+
+    out_path = CURRENT_WORKING_DIRECTORY / "output" / format / group_name / f"{plot_name}.{format}"
+    return out_path
 
 if __name__ == '__main__':
     
@@ -93,19 +106,25 @@ if __name__ == '__main__':
     average_execution_times = [
     (
         dataset.name,
-        dataset.get_average_execution_time()
+        dataset.get_average_execution_time() / 1000
     ) for dataset in benchmarks ]
+
+    sorted(average_execution_times, key=lambda x: x[0])  # Sort by average execution time
     
     names, avg_times = zip(*average_execution_times)  # Separate names and execution times
     plt.figure(figsize=(10, 6))
     plt.bar(names, avg_times, color='skyblue')
-    plt.title('Average Execution Time per Dataset', fontsize=14)
-    plt.xlabel('Dataset Name', fontsize=12)
-    plt.ylabel('Average Execution Time (ms)', fontsize=12)
+    plt.title('Average Execution Time for Workloads', fontsize=14)
+    plt.xlabel('Workload name', fontsize=12)
+    plt.ylabel('Average Execution Time (s)', fontsize=12)
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
-    plt.show()
 
     # Print the result
     for dataset in benchmarks:
         print(dataset)
+
+    format = "pdf"
+    out_path = get_plot_path("elapsed", "avg-bar", format)
+    plt.savefig(out_path,
+            format=format, bbox_inches="tight")

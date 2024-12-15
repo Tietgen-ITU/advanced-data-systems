@@ -1,5 +1,6 @@
 **/benchmark_*.csv*
 plots/
+output/
 exercise-02/src/ssb-benchmark-*.log
 
 *.pyc
