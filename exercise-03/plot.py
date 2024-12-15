@@ -48,6 +48,8 @@ class Measurement:
 @dataclass
 class Dataset:
     name: str
+    workload: str
+    projection: bool
     filepath: str
     file_type: str
     measurements: List[Measurement]
@@ -67,10 +69,16 @@ class Dataset:
         file_path = json["filepath"]
         file_name, extension = os.path.splitext(os.path.basename(file_path))
 
+        name_parts = json["name"].split("-")
+        has_projection = "projection" in name_parts
+        file_extension = extension[1:]  # Remove the dot from the extension
+
         return Dataset(
-            name=f"{json["name"]}_{file_name}",
+            name=f"{file_name}-{file_extension}-projection" if has_projection else f"{file_name}-{file_extension}",
+            workload=name_parts[0],
+            projection=has_projection,
             filepath=json["filepath"],
-            file_type=extension,
+            file_type=file_extension,
             measurements=[ Measurement.from_json(measurement) for measurement in json["measurements"] ]
         )
 

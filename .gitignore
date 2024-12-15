@@ -1,5 +1,6 @@
 **/benchmark_*.csv*
 plots/
+exercise-02/src/ssb-benchmark-*.log
 
 *.pyc
 .DS_Store
